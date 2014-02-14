@@ -1,0 +1,10 @@
+\beamer@endinputifotherversion {3.07pt}
+\select@language {english}
+\beamer@sectionintoc {1}{The function $u(x,y; t)$ of space and time}{3}{0}{1}
+\beamer@sectionintoc {2}{Some notation: Two partial differentiation operators}{6}{0}{2}
+\beamer@sectionintoc {3}{The equations solved by Matlab's pde toolbox}{9}{0}{3}
+\beamer@sectionintoc {4}{Boundary behavior}{18}{0}{4}
+\beamer@sectionintoc {5}{Income diffusion with zero boundary flow}{21}{0}{5}
+\beamer@sectionintoc {6}{How does PDE toolbox work?}{27}{0}{6}
+\beamer@sectionintoc {7}{Solving the equation}{35}{0}{7}
+\beamer@sectionintoc {8}{How do I get into all this?}{37}{0}{8}

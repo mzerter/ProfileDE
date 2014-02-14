@@ -1,0 +1,590 @@
+\documentclass[11pt]{beamer}
+
+\usetheme{Darmstadt}
+\usefonttheme{structurebold}
+
+\usepackage{times}
+\usepackage[english]{babel}
+\usepackage{pgf,pgfarrows,pgfnodes,pgfautomata,pgfheaps}
+\usepackage{amsmath,amssymb}
+\usepackage[latin1]{inputenc}
+
+\include{slabbrev}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Working with Partial Differential Equations in Matlab}
+\author{Jim Ramsay, McGill University}
+
+\date{}
+
+\begin{document}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\maketitle
+
+%\begin{center}
+%McGill Psychology Department \\
+%Montreal, February 23, 2009
+%\end{center}
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\frametitle{Overview}
+
+\begin{itemize}
+  \item The problem to be solved:  space-time function $u$
+  \item Two partial differentiation operators
+  \item The equations solved by Matlab's pde toolbox
+  \item The boundary behavior of $u$
+  \item Using Matlab's PDE toolbox
+\end{itemize}
+
+This talk follows closely the first chapter of J. O. Ramsay and B. W. Silverman, (2005)
+\emph{Functional Data Analysis, Second Edition}. New York: Springer.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{The function $u(x,y; t)$ of space and time}
+
+\begin{frame}
+
+\bi
+  \item We want to compute a function $u(x,y; t)$ that is a function of spatial
+  coordinates $x$ and $y$ and also, possibly, of time $t$.
+  \item The spatial coordinates $x$ and $y$ are defined within a bounded
+  region $\Omega$.
+  \item The boundary of the region is $\partial \Omega$.  This
+  boundary can be complicated.
+  \item Also, region $\Omega$ can have holes
+  within it defining \emph{interior} boundaries.  These interior
+  boundaries are contained in the boundary set $\partial \Omega$.
+  \item Time $t$ is defined over a closed interval, usually $[0,T]$.
+  \item The state of the system at time 0 is $u(x,y; 0) = u_0(x,y)$
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\frametitle{The inhabited portion of the island of Montreal}
+
+\includegraphics[width=3.5in]{figs/mtl_geometry.png}
+
+P. E. Trudeau airport and the rail yards,  and the oil refineries
+and water treatment plant are removed.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{Some notation: Two partial differentiation operators}
+
+\begin{frame}
+
+\bi
+  \item Function $u$ is the solution of a \emph{partial differential equation}.
+  \item That is, it is defined in terms of an equation relating derivatives
+  with respect $x$, $y$ and $t$.
+  \item These equations can be expressed quite simply in terms of two types of
+  partial derivatives.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+We need the ``grad'' operator $\nabla$, which stands for the
+operation of calculating the gradient.  That is,
+\[
+  \nabla = \left[
+  \begin{array}{c}
+  \frac{\partial}{\partial x}  \\ \\
+  \frac{\partial}{\partial y}
+  \end{array}
+  \right]
+\]
+so that
+\[
+  \nabla u = \left[
+  \begin{array}{c}
+  \frac{\partial u}{\partial x} \nonumber \\ \\
+  \frac{\partial u}{\partial y}
+  \end{array}
+  \right].
+\]
+
+The ``Laplacian'' operator $\triangle$ can be expressed as $\nabla
+\cdot \nabla$ and also as $\nabla^2$:
+\[
+  \triangle u = \nabla^2 u = \frac{\partial^2 u}{\partial x^2}  +
+  \frac{\partial^2 u}{\partial y^2}
+\]
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{The equations solved by Matlab's pde toolbox}
+
+\begin{frame}
+
+The core task of the PDE toolbox is to solve equations of the
+form:
+
+\begin{eqnarray}
+  -\nabla \cdot (\Cbold \nabla u) + a u & = & f
+  \nonumber \\
+  d \frac{du}{dt} -\nabla \cdot (\Cbold \nabla u) + a u & = & f
+  \nonumber \\
+  d \frac{du^2}{d^2t} -\nabla \cdot (\Cbold \nabla u) + a u & = & f
+  \nonumber \\
+\end{eqnarray}
+
+Scalars $a, f$, and $d$; and 2 by 2 matrix $\Cbold$ can be either
+constants or functions of $t, x,$ and $y$.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\frametitle{Interpreting the equations: time dependency}
+
+\bi
+  \item You can separate the time-dependent behavior from the
+  spatially-dependent behavior.
+  \item The first equation, called ``elliptic'', has no
+  time-dependency.
+  \item The second equation, called ``parabolic'', has first-order
+  time-dependency, and therefore shows either linear or exponential
+  decay or growth with respect to time.
+  \item The second equation, called ``hyperbolic'', has second-order
+  time-dependency, and therefore shows sinusoidal oscillation
+  with respect to time.
+  \item Each of the equations is \emph{forced} by exogenous input
+  represented by function $f$.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{The second-order spatial dependency}
+
+\bi
+  \item These equations all involve second derivative or curvature
+  variation over space.
+  \item If $\Cbold$ is constant, the curvature does not vary, and
+  the spatial variation is \emph{isotropic}.
+  \item If $\Cbold$ is a function, then curvature varies from
+  location to location, and possibly over time as well, and is
+  \emph{anisotropic}.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{The interaction between temporal and spatial variation}
+
+\bi
+  \item You can think of these equations as ordinary differential
+  equations in time $t$ forced by spatial curvature.
+  \item Let's look at the parabolic equation with constant
+  curvature coefficient $c$ and $f = 0$, taking spatial curvature over to the
+  forcing side:
+  \[
+    d \frac{du}{dt} = -au
+        + c \nabla \cdot \nabla u = -au + c \triangle u
+  \]
+  \item  The local rate of change in $u$ over $t$ is
+  proportional to the curvature.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+  \[
+    d \frac{du}{dt} = =au +
+        c \nabla \cdot \nabla u = -au + c \triangle u
+  \]
+
+\bi
+  \item  If curvature is sharply negative at a location,
+  such as at a peak, $u$ will decay at that location.
+  \item  Where the curvature is sharply positive, in
+  a valley or a well, $u$ will increase over time.
+  \item  This happens when something \emph{diffuses}, so
+  that high concentrations at a point diffuse outwards, and
+  local low concentrations are increased by inward diffusion.
+  \item This equation is called the \emph{heat} or \emph{diffusion}
+  equation.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{Income in the Island of Montreal}
+
+\includegraphics[width=3.5in]{figs/mtlwealth.png}
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{A socialist scenario}
+
+\bi
+  \item Quebec separates from Canada, and an aggressively leftist
+  government takes over the legislature.
+  \item Premier Fid\`ele Castreau and his finance minister,
+  Jacques L\'eton bring in measures to help the rich share their
+  income with the poor, which they enthusiastically agree to.
+  \item What will happen?
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{Elliptic or steady-state equations and hyperbolic or wave equations}
+
+\bi
+  \item If we replace $du/dt$ in the heat equation by 0, we
+  get the final steady-state that a diffusion process
+  tends to.
+  \item On the other hand, if we replace $du/dt$ by $d^2u/dt^2$
+  we get the basic linear or exponential decay replaced by
+  oscillation, and this is the \emph{wave} equation.
+  \item In either case, the long-term behavior of $u$
+  depends on what is happening at the boundaries.
+  \item Let's look at boundary behavior next.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{Boundary behavior}
+
+\begin{frame}
+
+\frametitle{Fixed boundary behavior}
+
+\bi
+  \item Here are two scenarios.
+  \item Rich people tend to live near the water on the Island of
+  Montreal.
+  \item Perhaps these people will insist that their income be left
+  fixed.  Leave it to the people who live in the interior to
+  diffuse their income around.
+  \item Fixing the boundaries is called a \emph{Dirichlet} boundary
+  condition.
+  \[
+    hu = r \ \ \mbox{on} \ \ \partial \Omega
+  \]
+  where $h$ and $r$ can be constants or functions.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{Fixed flow across the boundary}
+
+\bi
+  \item On the other hand, perhaps the government will put a wall
+  around the island, so that money can neither enter nor leave.
+  The diffusion across the boundary will be zero.
+  \item This is called a \emph{Neumann} boundary condition.
+  \[
+    \nbold \cdot(\Cbold \nabla u) + q u = g
+     \ \ \mbox{on} \ \ \partial \Omega
+  \]
+  where $\nbold$ is the normal vector on the boundary,
+  and $g$ is the flow rate across the boundary.
+  \item Mixtures of these conditions are also possible.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{Income diffusion with zero boundary flow}
+
+\begin{frame}
+
+\includegraphics[width=3.5in]{figs/mtl_0.png}
+
+Hampstead has six times the income of Snowdon.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\includegraphics[width=3.5in]{figs/mtl_1e-5.png}
+
+Things are improving; Hampstead has only four times the income of
+its neighbors.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\includegraphics[width=3.5in]{figs/mtl_1e-4.png}
+
+Near-justice on the mountain, but Beaconsfield has three times the
+income of Lachine.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\includegraphics[width=3.5in]{figs/mtl_1e-3.png}
+
+Income variation is now much smaller, but income is still piling
+up behind the airport and rail yards.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\frametitle{Spatial smoothing with the heat equation}
+
+\bi
+  \item The parabolic equation combined with the Neumann boundary
+  condition gives a recipe for spatial smoothing.
+  \item Time $t$ plays the role of the smoothing parameter
+  $\lambda$ in smoothing with a roughness penalty.
+  \item $\triangle u$ plays the role of the roughness penalty.
+  It corresponds to penalty $\int [Dx(t)]^2 \, dt$.  You can
+  go from one to the other by integrating by parts.
+  \item The final steady state is a constant, and hence
+  this closely resembles kernel smoothing as well.
+  \item But the Neumann boundary condition plays a key role:
+  it prevents stuff crossing the boundaries.  In this case,
+  income cannot cross the airport to get to the other side.
+  Kernel and roughness penalty methods cannot achieve this.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{How does PDE toolbox work?}
+
+\begin{frame}
+
+\frametitle{Specifying boundaries}
+
+\bi
+  \item Boundaries are specified by line and arc segments.
+  \item Boundary information is often available in
+  geographical information system (GIS) databases.  I got these
+  boundaries from the Geography library.
+  \item Boundary conditions can be specified separately for each
+  boundary segment.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\includegraphics[width=3.5in]{figs/mtlboundary.png}
+
+The outside boundary has 1110 linear segments.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{The interior triangular mesh}
+
+\bi
+  \item The interior is divided into triangles.
+  \item The sizes of the triangles are adjusted so
+  as to have smaller triangles where things are changing
+  quickly or are spatially complex.
+  \item About 90\% of the computational cleverness in the toolbox
+  is associated with getting a good mesh.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\includegraphics[width=3.5in]{figs/mtl_mesh.png}
+
+There are 1063 triangles covering the area to be smoothed. They
+meet at 664 vertices and are defined by 267 edges.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+\frametitle{Census tracts in the Island of Montreal}
+
+\includegraphics[width=3.5in]{figs/mtlcensus.png}
+
+There were 493 census tracts on the Island.
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{Interpolating the information on to the triangular mesh}
+
+\bi
+  \item The irregularly spaced census income values are
+  interpolated to a rectangular grid.
+  \item Each triangle vertex is assigned the income value of
+  the rectangle containing the vertex.
+  \item This becomes the state of the system at time $t = 0.$
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+\begin{frame}
+
+
+\frametitle{Finite element basis functions}
+
+\bi
+  \item A piece-wise linear basis function is associated
+  with each vertex.
+  \item Each interior basis function is nonzero over an irregular
+  hexagon composed of the six triangles that meet at that
+  vertex.  Exterior basis functions will have fewer triangular
+  components.
+  \item The basis function is linear everywhere, zero on its
+  exterior boundary, and has value 1 at its central vertex.  It looks
+  like a tent.
+  \item The coefficient multiplying each basis function is
+  simply the value of the data at the central vertex.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{Solving the equation}
+
+\begin{frame}
+
+\bi
+  \item The differential equation is converted to an
+  equivalent integral equation, and
+  \item this equation is in turn
+  equivalent to a linear equation in the coefficients.
+  \item The linear system is usually huge, but most
+  of the elements of the coefficient matrix are zero.
+  Typically only 5\% or so are not.  The system is
+  solved using sparse matrix computation methods.
+\ei
+
+\end{frame}
+
+%  ---------------------------------------------------------------------
+
+%  ---------------------------------------------------------------------
+%  ---------------------------------------------------------------------
+
+\section{How do I get into all this?}
+
+\begin{frame}
+
+\bi
+  \item Begin by using the graphical interface for the PDE
+  toolbox.
+  \item To activate it, type \texttt{pdetool} into the Matlab
+  command window.
+  \item Work through some of the examples in the manual that comes
+  with the tool box
+\ei
+
+\end{frame}
+
+\end{document}

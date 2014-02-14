@@ -1,0 +1,92 @@
+function [f, dfdc, d2fdc2, d2fdcdp] = ...
+    SplineCoefs(coefs, times, data, pars, lik, proc)
+%  Evaluate the inner optimization objective function and their
+%  partial derivatives for a set of coefficient and parameter values
+%
+%  Arguments:   (All are required)
+%  COEFS      ...  A matrix containing coefficients for the expansion.  
+%                  It has NVAR columns, and its number of rows is
+%                  NBASIS*NVAR.
+%  TIMES      ...  The times of observation of those variables that are
+%                  measured.  These times are assumed to be common to all
+%                  measured variables.
+%  DATA       ...  Data matrix.  The number of columns is equal to the
+%                  number of variables (including unobserved variables).
+%                  The number of columns is equal to the number of 
+%                  observation points per variable times the number of
+%                  replications.
+%  PARS       ...  A vector of parameter values.  These are initial values
+%                  that are used to start the outer iterations.  Some
+%                  of these may be fixed, and the remainder are optimized.
+%                  The indices of the optimized parameters are contained
+%                  in argument ACTIVE.
+%  LIK        ...  A struct object set up by function LS_SETUP that
+%                  defines the loss function for fitting the data
+%  PROC       ...  A struct object set up by function LS_SETUP that
+%                  defines the loss function for fitting the 
+%                  differential equation.
+
+%  Last modified 8 January 2011
+
+if nargin < 6
+    error('Not all arguments are supplied.');
+end
+
+%  Codefficient array may come in as a vector ... reshape it to be a
+%  matrix with NBASIS rows
+
+nbasis = size(lik.bvals,2);
+coefs  = reshape(coefs(:),nbasis,numel(coefs)/nbasis);
+nvar   = size(coefs,2);
+
+%  values of data fitting functions and error sum of squares for data
+
+devals = lik.bvals*coefs;
+fdata = sum(lik.fn(data,times,devals,pars,lik.more));
+
+%  error integral of squares for the penalty term
+
+feqtn = proc.fn(coefs,proc.bvals,pars,proc.more);
+
+%  total error sum of squares
+
+f = fdata + feqtn;
+
+%  evaluate the coefficient-gradient if required
+
+if nargout > 1
+    g = lik.bvals'*lik.dfdx(data,times,devals,pars,lik.more) + ...
+        proc.dfdc(coefs,proc.bvals,pars,proc.more);
+    dfdc = g(:);
+end
+
+%  evaluate the c-Hessian if required
+
+if nargout > 2
+    d2likdx2 = lik.d2fdx2(data,times,devals,pars,lik.more);
+    [l,m,n] = size(d2lik);
+    H = cell(m,n);
+    for i = 1:m
+        for j = 1:n
+            H{i,j} = lik.bvals'*diag(d2likdx2(:,i,j))*lik.bvals;
+        end
+    end
+    d2procdc2 = proc.d2fdc2(coefs,proc.bvals,pars,proc.more);
+    d2fdc2 = blocks2mat(H) + d2procdc2;
+end
+
+%  evaluate the c-p cross derivative if required
+
+if nargout > 3
+    d2lik = lik.d2fdxdp(data,times,devals,pars,lik.more);
+    H1 = zeros(nvar*nbasis,length(pars));
+    for i = 1:length(pars)
+        H1i = lik.bvals'*squeeze(d2lik(:,:,i));
+        H1(:,i)  = H1i(:);
+    end
+    H2 = proc.d2fdcdp(coefs,proc.bvals,pars,proc.more);
+    d2fdcdp = H1 + H2;
+end
+
+end
+

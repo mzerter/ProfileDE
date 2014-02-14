@@ -1,0 +1,99 @@
+> #### Get some data and parameters
+>
+> SEIRvarnames = SEIRvarnames
+> SEIRparnames = SEIRparnames
+>
+> SEIRtimes = SEIRtimes
+> SEIRdata = SEIRdata
+>
+> SEIRpars = SEIRpars
+> SEIRpars
+        mu          i         nu      sigma      gamma         b0         b1
+1.0000e+05 0.0000e+00 2.0000e-02 4.5625e+01 7.3000e+01 2.4820e-04 0.0000e+00
+        b2
+1.9856e-05
+> SEIRpars[1]
+   mu
+1e+05
+> SEIRpars[2]
+i
+0
+> SEIRpars[3]
+  nu
+0.02
+> SEIRpars[4]
+ sigma
+45.625
+> SEIRpars[5]
+gamma
+   73
+> SEIRpars[6]
+       b0
+0.0002482
+> SEIRpars[7]
+b1
+ 0
+> SEIRpars[8]
+        b2
+1.9856e-05
+> data = cbind(matrix(NA,length(SEIRdata),2),SEIRdata)
+>
+> # We'll also look at the log observations
+>
+> logdata = log(data)
+>
+> #### define the right side evaluation function
+>
+> SEIRfn = make.SEIR()
+>
+> #### A couple of functions to define the infection rate
+>
+> beta.fun = function(t,p,more){
++     return( p['b0'] + p['b1']*sin(2*pi*t) + p['b2']*cos(2*pi*t) )
++ }
+>
+> beta.dfdp = function(t,p,more){
++     dfdp =  cbind(rep(1,length(t)), sin(2*pi*t), cos(2*pi*t))
++     colnames(dfdp) = c('b0','b1','b2')
++     return(dfdp)
++ }
+>
+> betamore = list(beta.fun =beta.fun,
++                 beta.dfdp=beta.dfdp,
++                 beta.ind =c('b0','b1','b2'))
+>
+>
+> # Create a collocation basis to represent the state vector
+>
+> rr = range(SEIRtimes)
+> knots = seq(rr[1],rr[2],2/52)
+> norder = 3
+> nbasis = length(knots)+norder-2
+>
+> bbasis = create.bspline.basis(range=rr,nbasis=nbasis,norder=norder,breaks=knots)
+>
+> DEfd = smooth.basis(SEIRtimes,logdata[,3],fdPar(bbasis,1,0.1))
+> coefs = cbind(matrix(0,bbasis$nbasis,2),DEfd$fd$coefs)
+> DEfd = fd(coefs,bbasis)
+> objs = LS.setup(SEIRpars,fn=SEIRfn,fd.obj=DEfd,more=betamore,data=data,times=SEIRtimes,
++   posproc=TRUE,poslik=FALSE,names=SEIRvarnames,lambda=c(100,1,1))
+>
+> proc = objs$proc
+> lik = objs$lik
+> res2 = inneropt(data=logdata, times=SEIRtimes ,pars=SEIRpars,
++                 proc=proc, lik=lik, coefs=res1$coefs, in.meth='nlminb')
+>
+> res1 = FitMatchOpt(coefs=coefs,which=1:2,proc=proc,pars=SEIRpars,meth='nlminb')
+>
+> res2 = inneropt(data=logdata, times=SEIRtimes ,pars=SEIRpars,
++                 proc=proc, lik=lik, coefs=res1$coefs, in.meth='nlminb')
+>
+> res3 = outeropt(data=logdata, times=SEIRtimes, pars=SEIRpars,
++                 proc=proc, lik=lik ,coefs=res2$coefs,
++                 active=c('i','b0','b1','b2'))
+  0:     3.7114863:  0.00000 0.000248200  0.00000 1.98560e-05
+ 10:     3.5700129: -4.49385e-12 0.000181001 -1.74267e-06 1.67429e-05
+ 20:     3.5498848: -8.33830e-12 0.000162391 -1.01584e-06 1.40440e-05
+ 30:     3.5447237: -9.06351e-12 0.000152107 -8.50531e-07 1.32548e-05
+>
+

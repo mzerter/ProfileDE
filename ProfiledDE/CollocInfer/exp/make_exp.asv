@@ -1,0 +1,28 @@
+%%%%%%%%%%% exponential of identity functions   %%%%%%%%%%%%%%%%%%
+
+function expstruct = make_exp()
+
+expstruct.fn      = @exp_fn;
+expstruct.dfdx    = @exp_dfdx;
+expstruct.dfdp    = @exp_dfdp;
+expstruct.d2fdx2  = @exp_d2fdx2;
+expstruct.d2fdxdp = @exp_d2fdxdp;
+
+end
+
+function d2fdx2val = exp_d2fdx2(t,x,pars,more)
+
+n = size(x,2);
+g =  zeros(size(x),n,n);
+for i = 1:n
+    g(:,i,i,i) = exp(x(:,i));
+end
+d2fdx2val = g;
+
+end
+
+function d2fdxdpval = exp_d2fdxdp(t,x,pars,more)
+
+d2fdxdpval = zeros(size(x),size(x,2),length(pars));
+
+end

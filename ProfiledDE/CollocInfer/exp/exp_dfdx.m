@@ -1,0 +1,12 @@
+function dfdxval = exp_dfdx(t,x,pars,more)
+
+n = size(x,2);
+[l,m] = size(x);
+g = zeros(l,m,n);
+for i = 1:n
+    g(:,i,i) = exp(x(:,i));
+end
+dfdxval = g;
+
+end
+

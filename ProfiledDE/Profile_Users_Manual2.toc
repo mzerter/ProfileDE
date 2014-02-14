@@ -1,0 +1,31 @@
+\contentsline {section}{\numberline {1}Introduction}{2}
+\contentsline {subsection}{\numberline {1.1}Defining the problem}{2}
+\contentsline {subsection}{\numberline {1.2}The profiling estimation procedure}{3}
+\contentsline {subsubsection}{\numberline {1.2.1}The basis function expansion of $x_i$:}{4}
+\contentsline {subsubsection}{\numberline {1.2.2}The inner optimization:}{4}
+\contentsline {subsubsection}{\numberline {1.2.3}The outer optimization:}{5}
+\contentsline {section}{\numberline {2}Example: FitzHugh-Nagumo Equations}{5}
+\contentsline {section}{\numberline {3}MATLAB Objects Needed for the Estimation. }{6}
+\contentsline {subsection}{\numberline {3.1}Cell Arrays}{6}
+\contentsline {subsection}{\numberline {3.2}Data Objects}{8}
+\contentsline {subsection}{\numberline {3.3}Basis Objects}{8}
+\contentsline {subsection}{\numberline {3.4}Functional Data Objects}{10}
+\contentsline {subsection}{\numberline {3.5}Weights and Smoothing Parameters}{10}
+\contentsline {section}{\numberline {4}Defining the Differential Equation}{11}
+\contentsline {subsection}{\numberline {4.1}Derivatives on the Left Hand Side}{11}
+\contentsline {subsection}{\numberline {4.2}Functions for the Right Hand Side}{11}
+\contentsline {section}{\numberline {5}Calling Estimation Functions}{14}
+\contentsline {subsection}{\numberline {5.1}Model-Based Smoothing}{14}
+\contentsline {subsection}{\numberline {5.2}Profiled Estimation}{15}
+\contentsline {section}{\numberline {6}Covariance Matrices of Parameter Estimates}{16}
+\contentsline {section}{\numberline {7}Parameter Estimation with Replication}{17}
+\contentsline {section}{\numberline {8}Estimating Starting Values from a Smooth}{18}
+\contentsline {subsection}{\numberline {8.1}Unmeasured Variables}{18}
+\contentsline {subsection}{\numberline {8.2}Initial Estimates for $\theta $}{19}
+\contentsline {section}{\numberline {9}An Example of Generality}{19}
+\contentsline {section}{\numberline {10}Forcing Functions and Diagnostics}{20}
+\contentsline {subsection}{\numberline {10.1}Forcing Linear Systems}{21}
+\contentsline {subsection}{\numberline {10.2}Forcing General Differential Equations}{22}
+\contentsline {section}{\numberline {11}Predefined Right Hand Side Systems}{23}
+\contentsline {subsection}{\numberline {11.1}Forced, Linear Systems}{23}
+\contentsline {subsection}{\numberline {11.2}Univariate polynomial functions}{25}

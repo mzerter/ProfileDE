@@ -1,0 +1,8 @@
+function fval = f(p,t,u,time)
+    disp('time is')
+    disp(time)
+    if time>0.5
+        fval=5;
+    else 
+        fval=0;
+    end  

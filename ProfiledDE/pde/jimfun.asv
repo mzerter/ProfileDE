@@ -1,0 +1,13 @@
+function f = jimfun(p,t,u,time)
+
+np=size(p,2);
+nt=size(t,2);
+
+t1ind = t(1,:);
+t2ind = t(2,:);
+t3ind = t(3,:);
+
+x = p(1,t1ind) + p(1,t1ind) + p(1,t1ind);;
+
+% f = p(1,:).*exp(-p(1,:).^2/2);
+f = sin(2.*pi.*p(1,:));
