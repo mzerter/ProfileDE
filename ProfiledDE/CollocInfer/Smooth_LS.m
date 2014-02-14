@@ -108,7 +108,7 @@ if nargin < 14, diffeps     = 1e-6;  end
 if nargin < 13, options_in  = [];    end
 if nargin < 12, in_method   = [];    end
 if nargin < 11, quadrature  = [];    end
-if nargin < 10, obsweights     = [];    end
+if nargin < 10, obsweights  = [];    end
 if nargin <  9, more        = [];    end
 if nargin <  8, fdobj       = [];    end
 if nargin <  7, basisvals   = [];    end
@@ -121,7 +121,7 @@ if nargin <  7, basisvals   = [];    end
 %  Carry out an inner optimization to estimate coefficients for
 %  processes given parameter values
 
-ncoefs = inneropt(times, data, pars, lik, proc, options_in, in_method);
+ncoefs = inneropt(times, data, pars, lik, proc, in_method, options_in);
 nbasis = size(lik.bvals,2);
 ncoefs  = reshape(ncoefs,nbasis,numel(ncoefs)/nbasis);
 

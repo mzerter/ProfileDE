@@ -5,12 +5,6 @@ if ~isfield(more,'more')
 end
 
 fdevals = more.fn(times,devals,pars,more.more);
-dfdx    = more.dfdx(times,devals,pars,more.more);
-[l,m,n] = size(dfdx);
-if any(size(data) ~= size(fdevals))
-    disp(['size of data:     ',num2str(size(data))])
-    disp(['size of fdevals:  ',num2str(size(fdevals))])
-end
 difs = data - fdevals;
 difs(isnan(difs)) = 0;
 
@@ -26,11 +20,15 @@ else
 end
 
 weights = checkweights(more.weights,whichobs,difs);
-
 difs = weights.*difs;
-g    = zeros(l,m);
+
+dfdx = more.dfdx(times,devals,pars,more.more);
+[l,m,n] = size(dfdx);
+
+g = zeros(l,m);
 for i = 1:n
-    g(:,i) = sum((difs.*squeeze(dfdx(:,:,i))),2);
+    temp   = sum(difs.*squeeze(dfdx(:,:,i)),2);
+    g(:,i) = temp;
 end
 dxval = -2*g;
 

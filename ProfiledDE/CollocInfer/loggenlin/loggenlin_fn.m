@@ -14,6 +14,8 @@ end
 %  put x into data scale
 
 x = exp(x);
+p = exp(p);
+
 [nt,nx] = size(x);
 if nargin < 4,  more = [];  end
 %  identify dimensions

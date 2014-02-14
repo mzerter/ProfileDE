@@ -2,6 +2,7 @@ classdef ODE < handle
 %% ODE Class  
 % Idea is to give a symbolic representation of the ODE. 
 % Calculates all the necessary functions based on symbolic package.
+%
 % TODO:
 %           - Add data property to ODE
 %           - Graphing data + ode?                
@@ -43,38 +44,81 @@ classdef ODE < handle
     
     methods
         function thisODE = ODE(f,t,x,p)
+%              ODE Contructor function for ODE Class
+%              Arguments:
+%               All four arguments are required.
+%              f      ... A vector containing the symbolic representation of the
+%                         differential equation.
+%              t      ... A symbolic variable representing time in f.
+%              x      ... A symbolic vector representing the state variables in f.
+%              p      ... A symbolic vector representing the parameter variables in f.
+%              
+%             TODO:
+%                 -Lots of error handling
+%              
+%           Initialize:
+%             
+%               Need to type the internal variables correctly (sym variable) before
+%               assigning them to the values passsed in the contructor.
             syms asim 
+            
             thisODE.DE_Symbolic = asim;
             thisODE.paramvector_Symbolic = asim;
             thisODE.statevector_Symbolic = asim;
             thisODE.time_Symbolic = asim;
             
+%               Initial Value of exp_paramvector_bool
+            thisODE.exp_paramvector_bool = 0;
+            
+            
+%           Assign:
+%             
+%               Internal copies of the values from the contructor call.
             thisODE.DE_Symbolic = f;
             thisODE.paramvector_Symbolic = p;
             thisODE.statevector_Symbolic = x;
             thisODE.time_Symbolic = t;
-%            Initial Value of exp_paramvector_bool
-            thisODE.exp_paramvector_bool = 0;
             
+            
+
         end
        
         function functionHandle = returnMatlabFunctions(thisODE)
+%              returnMatlabFunctions Function for debugging.
+%              Returns function handles derived from the symbolic equations DE_Symbolic.
+%              IE conversion from symbolic -> @ functions using
+%              matlabFunction().
+%              Delete this later.
+            
             for i=1:length(thisODE.DE_Symbolic)
                 functionHandle{i} = matlabFunction(thisODE.DE_Symbolic(i));
             end
         end
         
         function SetExponentialParameter(thisODE)
+%             SetExponentialParameter Sets internal flag(exp_paramvector_bool)
+%             to indicate that the user is requesting equations where the parameters
+%             are necessarily positve. Each call will switch the value to the opposite of what is currently set. 
+%         
+%             TODO:
+%                 -Lots of error handling
+            
+            % Message to user.
             switch thisODE.exp_paramvector_bool
                 case {0} 
                     disp(['NOTE: ODE will now exponentiate the parameter vector!'])
                 case {1} 
                     disp(['NOTE: ODE will NO LONGER exponentiate the parameter vector!'])
             end
+            
+            % Switch value of exp_paramvector_bool
             thisODE.exp_paramvector_bool = not(thisODE.exp_paramvector_bool);
         end
         
         function displayResult(thisODE)
+%           displayResult Output results from computeDerivatives.
+%           computeDerivatives must be called before this function.
+            
             disp('Value for dfdx')
             disp(thisODE.Display_Symbolic{1})
             disp('Value for dfdp')
@@ -86,20 +130,30 @@ classdef ODE < handle
         end
             
         function computeDerivatives(thisODE)
-          % Compute functions required for CollocInfer package;
-
-          % Will end up with more than the necessary number of derivatives
-          % from these operations.
+%             computeDerivatives Use symbolic toolbox functions to compute derivatives
+%             required from CollocInfer. Necessary values should have been set 
+%             when class was constructed.
+%         
+%             TODO:
+%                 -Lots of error handling
+%
+% 
+%           Creates a vector of all the symbolic variables needed to
+%           compute the derivatives
           X = [thisODE.statevector_Symbolic,thisODE.paramvector_Symbolic];
           
           
-          Jf = thisODE.Jacobian2(thisODE.DE_Symbolic,X);
+%           Computes the Jacobian
+          Jf = thisODE.Jacobian(thisODE.DE_Symbolic,X);
           
+%           dfdx is the first portion of this matrix
           dfdx = Jf(:,1:length(thisODE.statevector_Symbolic));
+          
+%           Set this value so that displayResult() need to rerun this portion
           thisODE.Display_Symbolic{1} = dfdx;
-%         Need some performance testing on this. Kind of convoluted!
 
-          %Need a vector representing the expected parameters!
+
+%           Using this symoblic varaible to maintain the shape of the matrix. It will be substituted with 0 later in make().
           syms trick;
           
           fn_out = reshape(thisODE.DE_Symbolic + trick*thisODE.statevector_Symbolic(1),size(thisODE.DE_Symbolic,1)*size(thisODE.DE_Symbolic,2),1);
@@ -121,14 +175,14 @@ classdef ODE < handle
           dfdp_hidden(trick,X,thisODE.time_Symbolic) = dfdp_out;
           f.dfdp = matlabFunction(dfdp_hidden);
          
-          d2fdx2 = thisODE.Jacobian2(dfdx,thisODE.statevector_Symbolic);
+          d2fdx2 = thisODE.Jacobian(dfdx,thisODE.statevector_Symbolic);
           thisODE.Display_Symbolic{3} = d2fdx2;
           
           d2fdx2_out = reshape(d2fdx2 + trick*thisODE.statevector_Symbolic(1),size(d2fdx2,1)*size(d2fdx2,2),1);
           d2fdx2_hidden(trick,X,thisODE.time_Symbolic) = d2fdx2_out;
           f.d2fdx2 = matlabFunction(d2fdx2_hidden) ;        
           
-          d2fdxdp = thisODE.Jacobian2(dfdx,thisODE.paramvector_Symbolic);
+          d2fdxdp = thisODE.Jacobian(dfdx,thisODE.paramvector_Symbolic);
           thisODE.Display_Symbolic{4} = d2fdxdp;
           
           d2fdxdp_out = reshape(d2fdxdp + trick*thisODE.statevector_Symbolic(1),size(d2fdxdp,1)*size(d2fdxdp,2),1);
@@ -142,7 +196,7 @@ classdef ODE < handle
         end
         
         function plot(thisODE,trange,x_init,p_init,more)
-%           Create a figure for plot?
+
            
             fn = thisODE.make();
            
@@ -151,7 +205,7 @@ classdef ODE < handle
             
         end
         
-        function [T,Y] = generateData(thisODE,trange,x_init,p_init,more,sig);
+        function [T,Y] = generateData(thisODE,trange,x_init,p_init,more,sig)
             fn = thisODE.make();
            
             MU = zeros(1,length(x_init));
@@ -168,9 +222,7 @@ classdef ODE < handle
             sig2noise = signalMean ./ noiseStd
             Y = Y + randNum;
             
-        end
-        
-        
+        end               
         
         function f = make(thisODE)
             f.fn = @thisODE.fn;
@@ -186,11 +238,15 @@ classdef ODE < handle
     
     methods (Access=private)
         
-       function result = Jacobian2(~,F,y)
+        function result = Jacobian(~,F,y)
            % Replace the symbolic Jacobian. Will compute Jacobian on each
            % of the columns and append each as rows to result. This
            % functions like the Jacobian in the symbolic package pre 2011?.
-           
+%         
+%             TODO:
+%                 -Lots of error handling
+
+
            numCols = size(F,2);
            
            if numCols == 1
@@ -207,7 +263,7 @@ classdef ODE < handle
            return;
        end
         
-       function result = fn(thisODE,t,x,p,more)
+        function result = fn(thisODE,t,x,p,more)
             if thisODE.exp_paramvector_bool == 1
                 p = exp(p);
             end

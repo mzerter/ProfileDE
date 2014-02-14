@@ -121,9 +121,16 @@ SplineEst.NewtRaph = function(coefs,times,data,lik,proc,pars,
     g = SplineCoefsDC(coefs,times,data,lik,proc,pars)
     H = SplineCoefsDC2sparse(coefs,times,data,lik,proc,pars)
 
-    if(is.matrix(H)){ DC = -ginv(H)%*%g  }
-    else{ DC = -as.matrix(solve(H,g)) }
+    eigs = eigen(H)$values
+    gam = -2*min(eigs[!(eigs==0)])
+    if(gam <0 ){ gam = -gam/4 }
+    eye = diag(rep(1,ncol(H)))
 
+ # gam = 0
+
+ #   if(is.matrix(H)){ DC = -ginv(H+gam*eye)%*%g  }
+ #   else{ DC = -as.matrix(solve(H+gam*eye,g)) }
+ 
     gradnorm1 = 1
     fundif = 1
     iter = 0
@@ -134,27 +141,31 @@ SplineEst.NewtRaph = function(coefs,times,data,lik,proc,pars,
     while( gradnorm1 > control$reltol & fundif > 0 & iter < control$maxit){
   
         iter = iter + 1    
-        if( is.matrix(H) ){ DC = -ginv(H)%*%g }
-        else{ DC = -as.matrix(solve(H,g)) }
+        if( is.matrix(H) ){ DC = -ginv(H+gam*eye)%*%g }
+        else{ DC = -as.matrix(solve(H+gam*eye,g)) }
    
         ntry = 0
         
         coefs1 = coefs0 
         
-        if(control$trace >0){ print(c(f0,mean(abs(DC)),0)) }
+ #       if(control$trace >0){ print(c(,f0,mean(abs(DC)),0)) }
 
         while( (f1 >= f0) & (t(DC)%*%DC > control$reltol) & (ntry < control$maxtry) ){
-            
-            
+        
+
             coefs1 = coefs0 + DC
             f1 = SplineCoefsErr(coefs1,times,data,lik,proc,pars)
-            DC = DC/2
+ #         DC = DC/2            
+            gam = gam*2
+            if( is.matrix(H) ){ DC = -ginv(H+gam*eye)%*%g }
+            else{ DC = -as.matrix(solve(H+gam*eye,g)) }           
             ntry = ntry + 1
   #          print(c(f1,f0, t(DC)%*%DC,control$reltonl,ntry,control$maxtry))
   #          print((f1 >= f0) & (t(DC)%*%DC > control$reltol) & (ntry < control$maxtry))
             
         }
 
+        gam = gam/4
         coefs0 = coefs1
         
         g = SplineCoefsDC(coefs0,times,data,lik,proc,pars)
@@ -167,7 +178,7 @@ SplineEst.NewtRaph = function(coefs,times,data,lik,proc,pars,
         if(control$trace>1){ print(c(iter,ntry,f0,gradnorm1,fundif)) }
 
     }
-    if(control$trace>0){ print(c(f0,gradnorm1,iter)) }
+    if(control$trace>0){ print(c(f0,gradnorm1,iter,gam)) }
      
     return(list(coefs=coefs0,g=g,value=f0,H=H))
 }

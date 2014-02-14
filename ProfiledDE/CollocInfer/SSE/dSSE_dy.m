@@ -7,7 +7,6 @@ if ~isfield(more,'more')
 end
 
 fdevals = more.fn(times,devals,pars,more.more);
-
 difs    = data - fdevals;
 difs(isnan(difs)) = 0;
 

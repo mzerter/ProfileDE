@@ -284,7 +284,7 @@ posproc = 1;  %  because penalty term is on log of path
 
 [SIR_lik, SIR_proc] = ...
     LS_setup(SIR_fn, SIR_Time, [], [], SIR_lambda, ...
-             SIR_logIfd, [], [], [], [], poslik, posproc);
+             SIR_logIfd, [], [], [], [], [], poslik, posproc);
                   
 %  The next task is to improve the initial coefficient estimates 13 and 7
 %  defined above for S and E, respectively by using function FitMatchOpt

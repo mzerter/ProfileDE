@@ -1,0 +1,171 @@
+y1 = sym('y1');
+y2 = sym('y2');
+y3 = sym('y3');
+
+p1  = sym('p1');
+p2  = sym('p2');
+p3  = sym('p3');
+
+f1 = sym('f1');
+f2 = sym('f2');
+f3 = sym('f3');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                   define three functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+f1 = -p1*y1 + p1*y2;
+f2 =  p2*y1 - y2 + y1*y3;
+f3 = -p3*y3 + y1*y2;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%       define derivatives of three functions wrt three y's
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% y1
+
+disp(simplify(diff(f1,'y1')))
+disp(simplify(diff(f2,'y1')))
+disp(simplify(diff(f3,'y1')))
+
+% y2
+
+disp(simplify(diff(f1,'y2')))
+disp(simplify(diff(f2,'y2')))
+disp(simplify(diff(f3,'y2')))
+
+%y3
+
+disp(simplify(diff(f1,'y3')))
+disp(simplify(diff(f2,'y3')))
+disp(simplify(diff(f3,'y3')))
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    define second derivatives of three functions wrt three y's 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%  y1-y1
+disp(simplify(diff(diff(f1,'y1'),'y1')))
+disp(simplify(diff(diff(f2,'y1'),'y1')))
+disp(simplify(diff(diff(f3,'y1'),'y1')))
+
+%  y2-y1
+disp(simplify(diff(diff(f1,'y2'),'y1')))
+disp(simplify(diff(diff(f2,'y2'),'y1')))
+disp(simplify(diff(diff(f3,'y2'),'y1')))
+
+% y3-y1
+disp(simplify(diff(diff(f1,'y3'),'y1')))
+disp(simplify(diff(diff(f2,'y3'),'y1')))
+disp(simplify(diff(diff(f3,'y3'),'y1')))
+
+
+%  y1-y2
+disp(simplify(diff(diff(f1,'y1'),'y2')))
+disp(simplify(diff(diff(f2,'y1'),'y2')))
+disp(simplify(diff(diff(f3,'y1'),'y2')))
+
+%  y2-y2
+disp(simplify(diff(diff(f1,'y2'),'y2')))
+disp(simplify(diff(diff(f2,'y2'),'y2')))
+disp(simplify(diff(diff(f3,'y2'),'y2')))
+
+%  y3-y2
+disp(simplify(diff(diff(f1,'y3'),'y2')))
+disp(simplify(diff(diff(f2,'y3'),'y2')))
+disp(simplify(diff(diff(f3,'y3'),'y2')))
+
+
+%  y1-y3
+disp(simplify(diff(diff(f1,'y1'),'y3')))
+disp(simplify(diff(diff(f2,'y1'),'y3')))
+disp(simplify(diff(diff(f3,'y1'),'y3')))
+
+%  y2-y3
+disp(simplify(diff(diff(f1,'y2'),'y3')))
+disp(simplify(diff(diff(f2,'y2'),'y3')))
+disp(simplify(diff(diff(f3,'y2'),'y3')))
+
+%  y3-y3
+disp(simplify(diff(diff(f1,'y3'),'y3')))
+disp(simplify(diff(diff(f2,'y3'),'y3')))
+disp(simplify(diff(diff(f3,'y3'),'y3')))
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%              derivatives of 3 f's wrt 3 p's
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% p3
+
+disp(simplify(diff(f1,'p3')))
+disp(simplify(diff(f2,'p3')))
+disp(simplify(diff(f3,'p3')))
+
+% p4
+
+disp(simplify(diff(f1,'p4')))
+disp(simplify(diff(f2,'p4')))
+disp(simplify(diff(f3,'p4')))
+
+% p5
+
+disp(simplify(diff(f1,'p5')))
+disp(simplify(diff(f2,'p5')))
+disp(simplify(diff(f3,'p5')))
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     second derivatives of f's wrt y's and wrt 3 p's
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%  y1-p3
+disp(simplify(diff(diff(f1,'y1'),'p3')))
+disp(simplify(diff(diff(f2,'y1'),'p3')))
+disp(simplify(diff(diff(f3,'y1'),'p3')))
+
+%  y2-p3
+disp(simplify(diff(diff(f1,'y2'),'p3')))
+disp(simplify(diff(diff(f2,'y2'),'p3')))
+disp(simplify(diff(diff(f3,'y2'),'p3')))
+
+%  y3-p3
+disp(simplify(diff(diff(f1,'y3'),'p3')))
+disp(simplify(diff(diff(f2,'y3'),'p3')))
+disp(simplify(diff(diff(f3,'y3'),'p3')))
+
+
+
+%  y1-p4
+disp(simplify(diff(diff(f1,'y1'),'p4')))
+disp(simplify(diff(diff(f2,'y1'),'p4')))
+disp(simplify(diff(diff(f3,'y1'),'p4')))
+
+%  y2-p4
+disp(simplify(diff(diff(f1,'y2'),'p4')))
+disp(simplify(diff(diff(f2,'y2'),'p4')))
+disp(simplify(diff(diff(f3,'y2'),'p4')))
+
+%  y3-p4
+disp(simplify(diff(diff(f1,'y3'),'p4')))
+disp(simplify(diff(diff(f2,'y3'),'p4')))
+disp(simplify(diff(diff(f3,'y3'),'p4')))
+
+
+
+%  y1-p5
+disp(simplify(diff(diff(f1,'y1'),'p5')))
+disp(simplify(diff(diff(f2,'y1'),'p5')))
+disp(simplify(diff(diff(f3,'y1'),'p5')))
+
+%  y2-p5
+disp(simplify(diff(diff(f1,'y2'),'p5')))
+disp(simplify(diff(diff(f2,'y2'),'p5')))
+disp(simplify(diff(diff(f3,'y2'),'p5')))
+
+%  y3-p5
+disp(simplify(diff(diff(f1,'y3'),'p5')))
+disp(simplify(diff(diff(f2,'y3'),'p5')))
+disp(simplify(diff(diff(f3,'y3'),'p5')))
+
+

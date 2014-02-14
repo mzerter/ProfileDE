@@ -11,8 +11,12 @@ if any(x > 50)
     error(['Probable error: ', ...
            'a value of X exceeds 50 before exponentiation.']);
 end
+
 %  put x into data scale
+
 x = exp(x);
+p = exp(p);
+
 if nargin < 4,  more = []; end
 %  identify dimensions
 [nt,nx] = size(x);  
@@ -41,7 +45,7 @@ end
 %  compute di ln Z / di theta
 dfdpval = zeros(nt,nout,np);
 for k = 1:nout
-    dfdpval(:,more.sub(k,1),more.sub(k,3)) = x(:,more.sub(k,2))./fitval(:,k);
+    dfdpval(:,k,more.sub(k,3)) = x(:,more.sub(k,2))./fitval(:,k);
 end
 if ~isempty(more.force)
     %  set up matrix of forcing function values at time t
@@ -63,17 +67,13 @@ if ~isempty(more.force)
 end
 %  compute computation of second cross derivative
 d2fdxdpval = zeros(nt,nout,nx,np);
-for i=1:nt
-%     for j=1:nsub
-%         d2fdxdpval(i,:,more.sub(j,1),more.sub(j,3)) = 1./fitval;
-%     end
-    for k=1:nout        
-        d2fdxdpval(i,:,more.sub(k,1),more.sub(k,3)) = 1./fitval(i,k);
-        temp = Amat'*squeeze(dfdpval(:,k,:));
-        disp(size(temp))
-        disp(size(d2fdxdpval(i,k,:,:)))
-        d2fdxdpval(i,k,:,:) = squeeze(d2fdxdpval(i,k,:,:)) - temp;
-    end
+for k=1:nout
+    d2fdxdpval(:,k,more.sub(k,2),more.sub(k,3)) = ...
+        1./fitval(:,k);
+    temp = Amat(k,more.sub(k,2)).*squeeze(dfdpval(:,k,more.sub(k,3)))./ ...
+           fitval(:,k);
+    d2fdxdpval(:,k,more.sub(k,2),more.sub(k,3)) = ...
+        squeeze(d2fdxdpval(:,k,more.sub(k,2),more.sub(k,3))) - temp;
 end
 
 end

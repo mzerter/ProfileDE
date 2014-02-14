@@ -1,3 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Test code for Fitzhugh-Nagumo equations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%  Last modified 12 August 2013
 
 %  add paths to required functions
 
@@ -8,26 +13,79 @@ addpath('id')
 
 %  set up objects required for analysis
 
+%  observations times
+
 times = (0:0.5:20)';
+
+% variable names
+
 FHN_xnames = ['V','R'];
-FHN_knots  = (0:2:20)';
+
+%  make the functions file
+
 FHN_fn = make_fhn;
+
+%  basis for solution
+
+FHN_knots  = (0:2:20)';
 FHN_order  = 3;
 FHN_nbasis = length(FHN_knots) + FHN_order - 2;
 FHN_range  = [0,20];
 FHN_basis  = create_bspline_basis(FHN_range, FHN_nbasis, ...
                                   FHN_order, FHN_knots);
+                              
+%  initial parameter values
+
 FHN_pars0 = [0.2, 0.2, 3.0];
-% odeopts = odeset('RelTol',1e-13);
-% [x,y] = ode45(FHN_fn.fn_ode, times, [-1,1], odeopts, FHN_pars0);
-% FHN_data = y + 0.5.*randn(41,2);
+
+%  load the "data"
+
 load FHN_data.txt
+
+%  smooth the data using FDA function smooth_basis
+
 FHN_fdnames = cell(1,3);                                  
 FHN_fdnames{3} = FHN_xnames;
 FHN_xfd = smooth_basis(times, FHN_data, FHN_basis, ones(41,1), ...
                        FHN_fdnames);
+                   
+%  set the initial coefficints from this smooth as well as the 
+%  values of lambda for ProfiledDE
+                   
 FHN_coefs0 = getcoef(FHN_xfd);
 FHN_lambda = 1e4*[1,1]';
+
+%  plot the fit arising from the initial smooth
+
+FhN_fd0 = fd(FHN_coefs0, FHN_basis);
+plotfit_fd(FHN_data, times, FhN_fd0)
+
+%  -----------------------------------------------------------------
+%  use ProfileLS to find the solution.  This requires minimal setup
+%  -----------------------------------------------------------------
+
+global INNEROPT_COEFS0
+INNEROPT_COEFS0 = FHN_coefs0;
+
+tic;
+Profile_sse_struct = ...
+    Profile_LS(FHN_fn, times, FHN_data, FHN_coefs0, FHN_pars0, ...
+               FHN_basis, FHN_lambda);
+toc
+
+%  display results
+
+Profile_sse_struct.coefs
+Profile_sse_struct.pars
+
+%  plot data fit
+
+FhN_fd = fd(Profile_sse_struct.coefs, FHN_basis);
+plotfit_fd(FHN_data, times, FhN_fd)
+
+%  -----------------------------------------------------------------
+%           other analyses providing more control
+%  -----------------------------------------------------------------
 
 %  set up lik and proc objects for least squares fitting
 
@@ -48,19 +106,22 @@ coefs_opt = ...
     SplineEst_NewtRaph(times, FHN_data, FHN_coefs0, FHN_pars0, ...
                        lik, proc, options_in);
 
-%  optimizing using function inneropt
+FhN_fd = fd(reshape(coefs_opt,FHN_nbasis,2), FHN_basis);
+plotfit_fd(FHN_data, times, FhN_fd)
+
+%  optimizing coefficients using function inneropt
 
 global INNEROPT_COEFS0
 INNEROPT_COEFS0 = FHN_coefs0;
 
 options_in.Display    = 'on';
 options_in.MaxIter    = 200;
-options_in.LargeScale = 'on';
+options_in.LargeScale = 'off';
 options_in.GradObj    = 'on';
-options_in.Hessian    = 'on';
+options_in.Hessian    = 'off';
 
 tic;
-coefs_opt = inneropt(times, FHN_data, FHN_pars0, lik, proc, options_in);
+coefs_opt = inneropt(times, FHN_data, FHN_pars0, lik, proc, [], options_in);
 toc
 
 %  Profile_LS argument correspondences
@@ -86,6 +147,8 @@ poslik      = 0;
 posproc     = 0; 
 discrete    = 0; 
 
+%  optimizing parametes using function Profile_GaussNewt
+
 %  default values within Profile_GaussNewt
 
 active=1:length(FHN_pars0);   
@@ -104,15 +167,6 @@ tic;
 [newpars, res0, F0, coefs] = ...
     Profile_GausNewt(times, FHN_data, FHN_coefs0, FHN_pars0, lik, proc, ...  
                      in_method, options_in, options_out, active);
-toc
-
-out_method = [];
-
-tic;
-Profile_sse_struct = ...
-    Profile_LS(FHN_fn, times, FHN_data, FHN_coefs0, FHN_pars0, ...
-               FHN_basis, FHN_lambda, [], [], [], [], active, ...
-               in_method, out_method, options_in, options_out);
 toc
 
 

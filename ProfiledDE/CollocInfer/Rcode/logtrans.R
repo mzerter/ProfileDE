@@ -3,7 +3,8 @@ make.logtrans <- function()
 
 logtrans.fun <- function(times,y,p,more)
 { 
-	  y = exp(y)
+
+    y = exp(y)
     x = more$fn(times,y,p,more$more)
     x = x/y
 
@@ -13,9 +14,8 @@ logtrans.fun <- function(times,y,p,more)
 logtrans.dfdx <- function(times,y,p,more)
 {                  
      x1 = logtrans.fun(times,y,p,more)
-     y = exp(y)
-     x = more$dfdx(times,y,p,more$more)
-     
+     y  = exp(y)
+     x  = more$dfdx(times,y,p,more$more)
 
      for(i in 1:dim(x)[2]){
 	     for(j in 1:dim(x)[3]){
@@ -23,6 +23,7 @@ logtrans.dfdx <- function(times,y,p,more)
         }
         x[,i,i] = x[,i,i] - x1[,i]
      }
+
      return(x)
 }
 
@@ -36,6 +37,7 @@ logtrans.dfdp <- function(times,y,p,more)
             x[,i,j] = x[,i,j]/y[,i]
         }
      }
+
      return(x)
 }
 

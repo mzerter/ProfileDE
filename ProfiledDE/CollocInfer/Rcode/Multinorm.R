@@ -14,12 +14,12 @@ multinorm$fn <- function(y,times,x,pars,more)
     d = rep(0, dim(F)[1])
     if( dim(S)[1] == 1) {
       #  if variance is constant, inverse of S is computed once
-      Sinv = solve(S[1,,])     
+      Sinv = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
       lognormconst = -0.5*log(det(Sinv)) 
     }                                                     
     for(i in 1:dim(F)[1]){
         if( dim(S)[1] > 1) { 
-          Sinv = solve(S[i,,]) 
+          Sinv = solve(matrix(S[i,,],dim(S)[2],dim(S)[3]))  
           lognormconst = -0.5*log(det(Sinv)) 
         }
         resi = y[i,]-F[i,]
@@ -37,10 +37,10 @@ multinorm$dfdy <- function(y,times,x,pars,more)
 
      d = array(0,dim(y))
 
-     if( dim(S)[1] == 1){ SS = solve(S[1,,]) }
+     if( dim(S)[1] == 1){ SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) }
      
      for(i in 1:dim(y)[1]){
-        if( dim(S)[1] > 1){ SS = solve(S[i,,]) }
+        if( dim(S)[1] > 1){ SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) }
         d[i,] = SS%*%(y[i,]-F[i,])
      }
      return(d)
@@ -60,13 +60,13 @@ multinorm$dfdx <- function(y,times,x,pars,more)
      
      
      if( dim(S)[1] == 1){ 
-        SS = solve(S[1,,]) 
+        SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
         dSS = array(dS[1,,,],dim(dS)[2:4])
     }
 
      for(i in 1:dim(x)[1]){
         if( dim(S)[1] > 1){
-            SS = solve(S[i,,])
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSS = array(dS[i,,,],dim(dS)[2:4])
         }
         wdifs = SS%*%(y[i,]-F[i,])
@@ -94,13 +94,13 @@ multinorm$dfdp <- function(y,times,x,pars,more)
      d = matrix(0,dim(x)[1],length(pars))
 
      if( dim(S)[1] == 1){ 
-        SS = solve(S[1,,]) 
+        SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
         dSS = array(dS[1,,,],dim(dS)[2:4])
     }
 
      for(i in 1:dim(x)[1]){
         if( dim(S)[1] > 1){
-            SS = solve(S[i,,])
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSS = array(dS[i,,,],dim(dS)[2:4])
         }
         wdifs = SS%*%(y[i,]-F[i,])
@@ -130,14 +130,14 @@ multinorm$d2fdx2 <- function(y,times,x,pars,more)
      d = array(0,c(dim(x)[1],dim(x)[2],dim(x)[2]))
 
      if( dim(S)[1] == 1){
-        SS = solve(S[1,,])
+        SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
         dSS = array(dS[1,,,],dim(dS)[2:4])
         d2SS = array(d2S[1,,,,],dim(d2S)[2:5])
      }
 
      for(i in 1:dim(x)[1]){
         if( dim(S)[1] > 1){
-            SS = solve(S[i,,])
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSS = array(dS[i,,,],dim(dS)[2:4])
             d2SS = array(d2S[i,,,,],dim(d2S)[2:5])
         }
@@ -163,10 +163,10 @@ multinorm$d2fdy2 <- function(y,times,x,pars,more)
     
     d = array(0,c(dim(y),dim(y)[2]))
     
-    if( dim(S)[1] == 1){ SS = solve(S[1,,]) }  
+    if( dim(S)[1] == 1){ SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3]))  }  
     
     for(i in 1:dim(x)[1]){ 
-        if( dim(S)[1] > 1){ SS = solve(S[i,,]) }
+        if( dim(S)[1] > 1){ SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3]))  }
         d[i,,] = 0.5*(t(SS) + SS) 
     }
     
@@ -186,12 +186,12 @@ multinorm$d2fdxdy <- function(y,times,x,pars,more)
      d = array(0,c(dim(x)[1],dim(x)[2],dim(y)[2]))
 
      if( dim(S)[1] == 1){
-        SS = solve(S[1,,])
+        SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
         dSS = array(dS[1,,,],dim(dS)[2:4])
      }
      for(i in 1:dim(x)[1]){
         if( dim(S)[1] > 1){
-            SS = solve(S[i,,])
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSS = array(dS[i,,,],dim(dS)[2:5])
         }
         for(j in 1:dim(x)[2]){
@@ -219,7 +219,7 @@ multinorm$d2fdxdp <- function(y,times,x,pars,more)
      d = array(0,c(dim(x)[1],dim(x)[2],length(pars)))
 
      if( dim(S)[1] == 1){
-       SS = solve(S[1,,])
+       SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3])) 
        dSSx = array(dSx[1,,,],dim(dSx)[2:4])
        dSSp = array(dSp[1,,,],dim(dSp)[2:4])
        d2SS = array( d2S[1,,,,],dim(d2S)[2:5])
@@ -227,7 +227,7 @@ multinorm$d2fdxdp <- function(y,times,x,pars,more)
 
      for(i in 1:dim(x)[1]){
         if( dim(S)[1] > 1){
-            SS = solve(S[i,,])
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSSx = array(dSx[i,,,],dim(dSx)[2:4])
             dSSp = array(dSp[i,,,],dim(dSp)[2:4])
             d2SS = array(d2S[i,,,,],dim(d2S)[2:5])
@@ -257,12 +257,12 @@ multinorm$d2fdydp <- function(y,times,x,pars,more)
      d = array(0,c(dim(y)[1],dim(y)[2],length(pars)))
 
      if( dim(S)[1] == 1){ 
-        SS = solve(S[1,,]) 
+        SS = solve(matrix(S[1,,],dim(S)[2],dim(S)[3]))  
         dSS = array(dS[1,,,],dim(dS)[2:4])
      }     
      for(i in 1:dim(y)[1]){
         if( dim(S)[1] > 1){ 
-            SS = solve(S[i,,]) 
+            SS = solve(matrix(S[i,,],dim(S)[2],dim(S)[3])) 
             dSS = array(dS[i,,,],dim(dS)[2:4])
         }
         for(j in 1:length(pars)){

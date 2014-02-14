@@ -1,7 +1,10 @@
-% SIV model for flu dataset of Miao, et al (2010)
+%% SIV model for flu dataset of Miao, et al (2010)
 %
 % 
 % 
+
+%  Last modified 26 November 2013
+
 %% Add Paths
 
 clear;
@@ -131,7 +134,7 @@ posproc = 0;  %  because ode equations are for logged data
 
 [SIVlog_lik, SIVlog_proc] = ...
     LS_setup(SIVlog_fn, SIVlog_Time, [], [], SIVlog_lambda, ...
-             SIVlog_Vfd, [], [], [], [], poslik, posproc);
+             SIVlog_Vfd, [], [], [], [], [], poslik, posproc);
                   
 options_in = optimset('LargeScale', 'off', 'GradObj', 'on', ...
                       'Hessian', 'off', 'Diagnostics', 'off', ...

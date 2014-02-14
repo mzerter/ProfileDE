@@ -20,11 +20,11 @@ addpath('ChemoStat')
 % A full description of these equations can be found in the user manual. 
 % The five state variables for the equations are
 % 
-% N - nitrogen content in the Chemostat
+% N  - nitrogen content in the Chemostat
 % C1 - Algal type 1
 % C2 - Algal type 2 
-% B - Breeding Rotifers
-% S - Senescent Rotifers
+% B  - Breeding Rotifers
+% S  - Senescent Rotifers
 %
 % The system has 16 parameters, also described in the user manual. Notable
 % features include that only the sums C1+C2 and B+S can be observed.  
@@ -38,7 +38,7 @@ load ChemoStatDemoSetup
 
 % First we load up some data
 
-load ChemoData
+load ChemoData.txt
 
 % The first two of these parameters give the fractions of Algae and 
 % Rotifers that are counted. The remaining parameters are all positive and  
@@ -73,7 +73,7 @@ ChemoVarNames = ['N '; 'C1'; 'C2'; 'B '; 'S '];
 % Parameters 'p1' and 'p2' represent relative palatability of the two algal
 % clones, as such only one can be estimated and we fix p2 = 0. 
 
-logpars = [ChemoPars(1:2),log(ChemoPars(3:16))];
+ChemoLogPars = log(ChemoPars);
 
 ChemoLogData = log(ChemoData);
 
@@ -81,7 +81,7 @@ active = [1:2,5,7:16];
 
 % We'll choose a fairly large value of lambda. 
 
-lambda = 200.*ones(5,1);  
+lambda = ones(5,1);  
 
 % We need some basis functions
 
@@ -176,7 +176,7 @@ disp('lik: logstate functions')
 disp(lik)              %  logstate functions 
 disp('lik.more: SSE functions for evaluating fit')
 disp(lik.more)          %  SSE functions for evaluating fit
-disp('lik.more.more: genlin functions fitting composite observations')
+disp('lik.more.more: loggenlin functions fitting composite observations')
 disp(lik.more.more)     %  genlin functions fitting composite observations
 disp('lik.more.more.more: mat and sub matrices for genlin functions')
 disp(lik.more.more.more)  %  mat and sub matrices for genlin functions
@@ -202,11 +202,11 @@ lik.more.more.d2fdxdp(0, y0, logpars, lik.more.more.more)
 
 chemo_ode(0, y0', logpars)
 
-x = [y0;logpars'];
+y0 = log([2, 0.1, 0.4, 0.2, 0.1]);
 
 %  approximate the solution to the equation
 
-[odetrajt, odetrajy] = ode45(@chemo_ode,ChemoTime,y0,[],logpars);
+[odetrajt, odetrajy] = ode45(@chemo_ode,ChemoTime,y0,[],ChemoLogPars);
 
 plot(odetrajt, odetrajy)
 
@@ -241,7 +241,8 @@ INNEROPT_COEFS0 = coefs0;
 
 % Now, with parameters fixed, we'll estimate coefficients. 
 
-[f, grad] = SplineCoefs(coefs0, ChemoTime, ChemoLogData, logpars, lik, proc);
+[f, grad] = SplineCoefs(coefs0, ChemoTime, ChemoLogData, ChemoLogPars, ...
+                        lik, proc);
 
 grad = reshape(grad,nbasis,5); 
 subplot(1,1,1)
@@ -257,8 +258,11 @@ control_in = optimset('LargeScale', 'off', 'GradObj', 'on', ...
                       'Hessian', 'off', 'Diagnostics', 'off', ...
                       'Display', 'iter');
 
+INNEROPT_COEFS0 = coefs0; 
+
+
 tic;
-coefs1 = inneropt(ChemoTime, ChemoData, logpars, lik, proc, ...
+coefs1 = inneropt(ChemoTime, ChemoData, ChemoLogPars, lik, proc, ...
                   [], control_in);
 toc
 
@@ -282,19 +286,21 @@ xlabel('days')
 % Now we can continue with the outer optimization
 
 
-control_in = optimset('LargeScale', 'on', 'GradObj', 'on', ...
+control_in = optimset('LargeScale', 'off', 'GradObj', 'on', ...
                       'Hessian', 'off', 'Diagnostics', 'off', ...
                       'Display', 'off', ...
-                      'MaxIter', 400);
+                      'MaxIter', 100);
 
 
-control_out = optimset('LargeScale', 'off', 'GradObj', 'off', ...
+control_out = optimset('LargeScale', 'off', 'GradObj', 'on', ...
                       'Hessian', 'off', 'Diagnostics', 'off', ...
-                      'MaxIter', 0, ...
+                      'MaxIter', 100, ...
                       'Display', 'iter');
 
+INNEROPT_COEFS0 = coefs1; 
+
 tic;
-[pars_opt, coesfs2, value, gradient] = ...
+[pars_opt2, coefs2, value, gradient] = ...
          outeropt(ChemoTime, ChemoData, coefs1, logpars, ...
                   lik, proc, active, ...
                   [], control_in, [], control_out);
@@ -302,13 +308,13 @@ toc
 
 % We'll extract the resulting parameters and coefficients. 
 
-npars = res2.pars;
-coefs2 = reshape(res2.coefs,size(C));
+npars = pars_opt2;
+coefs2 = reshape(coefs2,size(coefs1));
 
 % And obtain an estimated trajectory and the exponentiated sum to comprare
 % to the data. 
 
-traj  = lik.bvals*C;
+traj  = lik.bvals*coefs2;
 ptraj = lik.more.more.fn(ChemoTime,exp(traj),npars,lik.more.more.more);
 
 % Lets have a look at how much we changed our parameters on the original 
@@ -317,32 +323,30 @@ ptraj = lik.more.more.fn(ChemoTime,exp(traj),npars,lik.more.more.more);
 new.pars = npars;
 new.pars(3:16) = exp(new.pars(3:16));
 
-disp(ChemoPars)
-disp(new.pars)
-disp(new.pars/ChemoPars)
+disp([log10(ChemoPars)', log10(new.pars)'])
+disp(log10(new.pars))
+disp(log10(new.pars./ChemoPars))
 
 % Now we can produce a set of diagnostic plots. 
 
 % Firstly, a representation of the trajectory compared to the data. 
 
 subplot(2,1,1)
-plot(ChemoTime,ptraj(:,1))
+plot(ChemoTime,ptraj(:,1),'b-', ChemoTime,ChemoData(:,1), 'bo')
 ylabel('Chlamy')
 xlabel('')
-points(ChemoTime,ChemoData(:,1))
 subplot(2,1,2)
-plot(ChemoTime,ptraj(:,2))
+plot(ChemoTime,ptraj(:,2),'b-', ChemoTime,ChemoData(:,2), 'bo')
 ylabel('Brachionus')
 xlabel('days')
-points(ChemoTime,ChemoData(:,2))
 
 
 % Now we'll plot both the derivative of the trajectory and the value of the
 % differential equation right hand side at each point. This represents the 
 % fit to the model. 
 
-traj2  = proc.bvals.bvals*C;
-dtraj2 = proc.bvals.dbvals*C;
+traj2  = proc.bvals.bvals*coefs2;
+dtraj2 = proc.bvals.dbvals*coefs2;
 
 ftraj2 = proc.more.fn(proc2.more.qpts,traj2,npars,proc.more.more);
 

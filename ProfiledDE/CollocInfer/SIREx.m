@@ -33,18 +33,16 @@ SIRrng = [0,tmax];
 
 SIRbasis = create_bspline_basis(SIRrng, nbasis, norder, knots);
 	
-lambda = 1e-4;
+lambda = 1e-2;
 SIRfdPar = fdPar(SIRbasis, 2, lambda);
 
-%  smooth the data using FDA function smooth_basis
+%  smooth the data using FDA function smooth_basis to provide initial
+%  values of the coefficients defining functions S, I and R.
 
 SIRfdnames = cell(1,3);                                  
-SIRfdnames{3} = cell(1,2);
-SIRfdnames{3}{1} = 'SIR Variables';
-SIRfdnames{3}{2} = cell(1,3);
-SIRfdnames{3}{2}{1} = 'S';
-SIRfdnames{3}{2}{2} = 'I';
-SIRfdnames{3}{2}{3} = 'R';
+SIRfdnames{3} = 'SIR Variables';
+SIRfdnames{2} = cell(1,2);
+SIRfdnames{2}{2} = ['S'; 'I'; 'R'];
 
 SIR_xfd = smooth_basis(SIRtimes, SIRdata, SIRfdPar, ones(nobs,1), ...
                        SIRfdnames);
@@ -61,20 +59,20 @@ plotfit_fd(SIRdata, SIRtimes, SIRfd0)
 
 %  define initial parameters
 
-N = 1e3;
+N  = 1e3;
 R0 = 5;
 gammaval = 1e0;  %  recovery rate
 muval    = 0e0;  %  change in susceptible population
 betaval  = (gammaval + muval)*R0/N;  %  infection rate
 SIRpars0 = [betaval, gammaval, muval];
 
-% Make the SIR functions
+% Make the SIR functions store as function handles in a struct object
 
-fn = make_SIR;
+fnStruct = make_SIR; 
 
 %  set lambda values
 
-SIRlambda = 1e0*[1,1,1]';
+SIRlambda = 1e2*[1,1,1]';
 
 %  set global parameter containing coefficienjts
 
@@ -83,8 +81,8 @@ INNEROPT_COEFS0 = SIRcoefs0;
 
 %  Now do the profiling estimation
 
-SIRstruct = Profile_LS(fn,SIRtimes,SIRdata,SIRcoefs0,SIRpars0, ...
-                          SIRbasis,SIRlambda);
+SIRstruct = Profile_LS0(fnStruct, SIRtimes, SIRdata, SIRcoefs0, ...
+                        SIRpars0, SIRbasis, SIRlambda);
 
 SIRcoefs = SIRstruct.coefs; 
 SIRpars  = SIRstruct.pars;
@@ -93,7 +91,7 @@ disp(['Parameter estimates: ',num2str(SIRpars)])
 
 % And look at the result
 
-SIRfd = fd(SIRcoefs,SIRbasis);
+SIRfd = fd(SIRcoefs,SIRbasis,SIRfdnames);
 plotfit_fd(SIRdata,SIRtimes,SIRfd)
   
 %  try estimation without the first variable
@@ -105,9 +103,9 @@ SIRdata1(19:21,1) = SIRdata(19:21,1);
 SIRcoefs1 = SIRcoefs0;
 SIRpars1  = SIRpars0;
 
-SIRstruct1 = Profile_LS(fn,SIRtimes,SIRdata1,SIRcoefs1,SIRpars1, ...
-                        SIRbasis,SIRlambda);
- 
+SIRstruct1 = Profile_LS(fnStruct, SIRtimes, SIRdata1, SIRcoefs1, SIRpars1, ...
+                        SIRbasis, SIRlambda);
+  
 SIRcoefs1 = SIRstruct1.coefs;
 SIRpars1  = SIRstruct1.pars;
  
@@ -116,15 +114,15 @@ disp(['Parameter estimates: ',num2str(SIRpars1)])
 % And look at the result
 
 SIRfd1 = fd(SIRcoefs1,SIRbasis,SIRfdnames);
-plotfit_fd(SIRdata,SIRtimes,SIRfd1)
+plotfit_fd(SIRdata1,SIRtimes,SIRfd1)
 
 %  try estimation without the first and last variable
 
 SIRdata2 = SIRdata1;
 SIRdata2(:,3) = NaN;
 
-SIRstruct2 = Profile_LS(fn,SIRtimes,SIRdata2,SIRcoefs0,SIRpars0, ...
-                          SIRbasis,SIRlambda);
+SIRstruct2 = Profile_LS(fnStruct,SIRtimes,SIRdata2,SIRcoefs0,SIRpars0, ...
+                         SIRbasis,SIRlambda);
  
 SIRcoefs2 = SIRstruct2.coefs;
 SIRpars2  = SIRstruct2.pars;
@@ -134,5 +132,21 @@ disp(['Parameter estimates: ',num2str(SIRpars2)])
 % And look at the result
 
 SIRfd2 = fd(SIRcoefs2,SIRbasis,SIRfdnames);
-plotfit_fd(SIRdata,SIRtimes,SIRfd2)
+plotfit_fd(SIRdata2,SIRtimes,SIRfd2)
 
+%  try a denser set of quadrature points
+
+quadraturepts = linspace(0,tmax,101)';
+
+SIRstruct = Profile_LS0(fnStruct,SIRtimes,SIRdata,SIRcoefs0,SIRpars0, ...
+                        SIRbasis,SIRlambda,[],[],quadraturepts);
+
+SIRcoefs = SIRstruct.coefs; 
+SIRpars  = SIRstruct.pars;
+
+disp(['Parameter estimates: ',num2str(SIRpars)])
+
+% And look at the result
+
+SIRfd = fd(SIRcoefs,SIRbasis,SIRfdnames);
+plotfit_fd(SIRdata,SIRtimes,SIRfd)

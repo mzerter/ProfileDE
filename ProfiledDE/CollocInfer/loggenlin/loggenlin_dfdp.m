@@ -10,8 +10,12 @@ if any(x > 50)
     error(['Probable error: ', ...
            'a value of X exceeds 50 before exponentiation.']);
 end
+
 %  put x into data scale
+
 x = exp(x);
+p = exp(p);
+
 if nargin < 4,  more = []; end
 %  identify dimensions
 [nt,nx] = size(x);  
@@ -39,7 +43,7 @@ if any(fitval <= 0)
 end
 %  compute di ln Z di theta
 [nout, na] = size(Amat);
-dfdpval = zeros(nt,np,nout);
+dfdpval = zeros(nt,nout,np);
 for k = 1:nout
     dfdpval(:,more.sub(k,1),more.sub(k,3)) = x(more.sub(k,2))/fitval(:,k);
 end

@@ -59,7 +59,7 @@
 % make this transition without needing to re-code all of your differential 
 % equations.
 
-%  Last modified by Jim 4 November 2013
+%  Last modified by Jim 26 November 2013
 
 %  add paths to required functions
 
@@ -218,18 +218,33 @@ SEIRlambda(1) = 100;
 
 %  set poslik and posproc
 
-poslik  = 0;  %  data   in raw or count scale
+poslik  = 1;  %  data   in raw or count scale
 posproc = 1;  %  states in log scale
 
 %  run LS.setup
 
 [SEIRlik, SEIRproc] = LS_setup(SEIRfn, SEIRtimes, [], [], SEIRlambda, ...
-                               DEfd0, betamore, [], [], [], ...
+                               DEfd0, betamore, [], [], [], [], ...
                                poslik, posproc);
-                  
-% [SEIRlik, SEIRproc] = LS_setup(SEIRfn, SEIRtimes, [], [], SEIRlambda, ...
-%                                DEfd0, betamore);
-                           
+
+%  display the "more" structure of SEIRlik
+
+disp('SEIRlik  structure:')
+likstr = 'SEIRlik';                           
+while isfield(eval(likstr),'more')
+    disp(eval(likstr))
+    likstr = [likstr,'.more'];
+end
+
+%  display the "more" structure of SEIRproc
+
+disp('SEIRproc  structure:')
+procstr = 'SEIRproc';                           
+while isfield(eval(procstr),'more')
+    disp(eval(procstr))
+    procstr = [procstr,'.more'];
+end
+
 %  these control options modifiy the default settings for Matlab
 %  function fminunc called within the inner optimization loop.
 
@@ -305,6 +320,26 @@ tic;
 SEIRcoefs2 = inneropt(SEIRtimes, SEIRlogdata, SEIRpars, ...
                       SEIRlik, SEIRproc, [], control_in);
 toc;
+
+% Reference to non-existent field 'fn'.
+% 
+% Error in findif_ode_fn (line 6)
+% fnval = more.fn(times,y,p,more.more);
+% 
+% Error in SSE (line 17)
+% fdevals = more.fn(times, x, pars, more.more);
+% 
+% Error in SplineCoefs (line 48)
+% fdata  = sum(lik.fn(data, times, x, pars, lik.more));
+% 
+% Error in fminunc (line 263)
+%         [f,GRAD] = feval(funfcn{3},x,varargin{:});
+% 
+% Error in inneropt (line 81)
+%     coefs_opt  = fminunc(@SplineCoefs, INNEROPT_COEFS0, options_in, ...
+% 
+% Caused by:
+%     Failure in initial user-supplied objective function evaluation. FMINUNC cannot continue.
 
 %  1.6 seconds,  108 iterations
 
@@ -455,7 +490,8 @@ poslik  = 1;
 posproc = 1;
 
 [SEIRlik2, SEIRproc2] = LS_setup(SEIRfn, SEIRtimes, [], [], [], DEfd, ...
-                                 betamore, [], [], [], poslik, posproc);
+                                 betamore, [], [], [], [], ...
+                                 poslik, posproc);
 
 INNEROPT_COEFS0 = SEIRcoefs2; 
 

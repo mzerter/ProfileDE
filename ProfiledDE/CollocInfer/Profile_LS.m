@@ -309,7 +309,9 @@ pars0 = allpars(active);
 % disp('optimization')
 
 if strcmp(out_method,'ProfileGN')
+    
     %%%  Gauss-Newton method  using function Profile_GausNewt  %%%
+    
     [newpars, res, F, ncoefs] = ...
         Profile_GausNewt(times, data, coefs, pars0, lik, proc, ...
                          in_method, options_in, options_out, active);
@@ -321,18 +323,15 @@ else
                                'Display', 'iter', ...
                                'TolFun', eps);
     end
-%     disp('ProfileSSE')
-%     res0 = ProfileSSE(pars0, times, data, coefs, allpars, ... 
-%                       lik, proc, active, in_method, options_in);
-%     disp(res0)         
-%     disp(sum(res0.^2))
               
     newpars = lsqnonlin(@ProfileSSE, pars0, [], [], options_out, ...
                         times, data, coefs, allpars, lik, proc, ...
                         active, in_method, options_in);
     allpars(active) = newpars;
+    
     %  wrap up by computing final residuals, Jacobian matrix, and
     %  coefficients
+    
     [res, Dres, ncoefs] = ...
              ProfileSSE_AllPar(allpars, times, data, coefs, lik, proc, ...
                                in_method, options_in);

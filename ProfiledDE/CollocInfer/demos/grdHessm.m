@@ -37,7 +37,7 @@ for i = 1:p
     hp(idx) = h;
     yvec = x(indy)';
     pvec = x(indp);
-    f0    = f(0, yvec, pvec)';
+    f0    = f(0,    yvec, pvec)';
     xnew  = x + hp;
     yvec  = xnew(indy)';
     pvec  = xnew(indp);
@@ -121,6 +121,7 @@ if nargout == 2
     lpi = size(idx,1);
     Hess  = zeros(n,p,p);
     for i = 1:lpi
+        disp(['Hess calculation, i = ',num2str(i)])
         idx1 = idx(i,1);
         idx2 = idx(i,2);
         h    = 0.1;
@@ -130,45 +131,17 @@ if nargout == 2
         hp1(idx1) = h;
         hp2(idx2) = h;
         Dmat = zeros(n,12,12);
-        xnew = x+hp1+hp2;
-        yvec  = xnew(indy)';
-        pvec  = xnew(indp);
-        f1 = f(0,yvec,pvec)';
-        xnew = x-hp1-hp2;
-        yvec  = xnew(indy)';
-        pvec  = xnew(indp);
-        f2 = f(0,yvec,pvec)';
-        xnew = x-hp1+hp2;
-        yvec  = xnew(indy)';
-        pvec  = xnew(indp);
-        f3 = f(0,yvec,pvec)';
-        xnew = x+hp1-hp2;
-        yvec  = xnew(indy)';
-        pvec  = xnew(indp);
-        f4 = f(0,yvec,pvec)';
-        Dmat(:,1,1) = (f1+f2-f3-f4)/(4*h^2);
+        Dmat(:,1,1) = ...
+            (f(x+hp1+hp2,yvec, pvec)'+f(x-hp1-hp2,yvec, pvec)'- ...
+            f(x-hp1+hp2,yvec, pvec)'-f(x+hp1-hp2,yvec, pvec)')/(4*h^2);
         rerr = ones(n,1);
         while any(rerr > toler) && (j < 12)
             h = h/2;
             hp1(idx1) = h;
             hp2(idx2) = h;
-            xnew = x+hp1+hp2;
-            yvec  = xnew(indy)';
-            pvec  = xnew(indp);
-            f1 = f(0,yvec,pvec)';
-            xnew = x-hp1-hp2;
-            yvec  = xnew(indy)';
-            pvec  = xnew(indp);
-            f2 = f(0,yvec,pvec)';
-            xnew = x-hp1+hp2;
-            yvec  = xnew(indy)';
-            pvec  = xnew(indp);
-            f3 = f(0,yvec,pvec)';
-            xnew = x+hp1-hp2;
-            yvec  = xnew(indy)';
-            pvec  = xnew(indp);
-            f4 = f(0,yvec,pvec)';
-            Dmat(:,j+1,1) = (f1+f2-f3-f4)/(4*h^2);
+            Dmat(:,j+1,1) = ...
+                (f(x+hp1+hp2,yvec, pvec)'+f(x-hp1-hp2,yvec, pvec)'- ...
+                f(x-hp1+hp2,yvec, pvec)'-f(x+hp1-hp2,yvec, pvec)')/(4*h^2);
             for k = 1:j
                 Dmat(:,j+1,k+1) = Dmat(:,j+1,k)+(Dmat(:,j+1,k)-Dmat(:,j,k))/((4^k)-1);
             end

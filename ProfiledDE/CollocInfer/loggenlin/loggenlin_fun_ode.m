@@ -10,8 +10,12 @@ if any(x > 50)
     error(['Probable error: ', ...
            'a value of X exceeds 50 before exponentiation.']);
 end
+
 %  put x into data scale
+
 x = exp(x);
+p = exp(p);
+
 if nargin < 4,  more = [];  end
 %  identify dimensions
 [nt,nx] = size(x);  

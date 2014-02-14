@@ -10,8 +10,12 @@ if any(x > 50)
     error(['Probable error: ', ...
            'a value of X exceeds 50 before exponentiation.']);
 end
+
 %  put x into data scale
+
 x = exp(x);
+p = exp(p);
+
 if nargin < 4,  more = []; end
 %  identify dimensions
 [nt,nx] = size(x);  
@@ -38,11 +42,10 @@ if any(fitval <= 0)
     error('A model value is not positive.');
 end
 [nout, na] = size(Amat);
-dfdxval = zeros(nt,nx,nout);
-for i=1:nt
-    fitvali = fitval(i,:);
-    fitmati = repmat(fitvali',1,nx);
-    dfdxval(i,:,:) = (Amat./fitmati)';
+dfdxval = zeros(nt,nout,nx);
+for k=1:nout
+    for j=1:nx
+        dfdxval(:,k,j) = Amat(k,j)./fitval(:,k);
+    end
 end
-
 end

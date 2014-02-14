@@ -1,132 +1,148 @@
 
 make.findif.loglik = function()
 {
-findif.loglik.fun <- function(data,times,y,p,more)
-{
-    x = more$fn(data,times,y,p,more$more)
-}
 
-findif.loglik.dfdx <- function(data,times,y,p,more)  # deriv wrt state
-{
-    x1 = more$fn(data,times,y,p,more$more)
-    x = array(0,dim(y))
+    #  ----  The function value
 
-    for(i in 1:ncol(y)){
-        ty = y
-        ty[,i] = y[,i] + more$eps
-        x[,i] = (more$fn(data,times,ty,p,more$more)-x1)/more$eps
+
+    findif.loglik.fun <- function(data,times,y,p,more)
+    {
+        x = more$fn(data,times,y,p,more$more)
     }
-    return(x)
-}
 
+    #  ----  1st derivative with respect to x
 
-findif.loglik.dfdy <- function(data,times,y,p,more)  # deriv wrt response
-{
-    x1 = more$fn(data,times,y,p,more$more)
-    x = array(0,dim(data))
+    findif.loglik.dfdx <- function(data,times,y,p,more)  # deriv wrt state
+    {
+        x1 = more$fn(data,times,y,p,more$more)
+        x  = array(0,dim(y))
 
-    for(i in 1:ncol(data)){
-        tdata = data
-        tdata[,i] = data[,i] + more$eps
-        x[,i] = (more$fn(tdata,times,y,p,more$more)-x1)/more$eps
+        for(i in 1:ncol(y)){
+            ty = y
+            ty[,i] = y[,i] + more$eps
+            x[,i] = (more$fn(data,times,ty,p,more$more)-x1)/more$eps
+        }
+        return(x)
     }
-    return(x)
-}
 
+    #  ----  1st derivative with respect to y
 
-findif.loglik.dfdp <- function(data,times,y,p,more)
-{
+    findif.loglik.dfdy <- function(data,times,y,p,more)  # deriv wrt response
+    {
+        x1 = more$fn(data,times,y,p,more$more)
+        x  = array(0,dim(data))
 
-    x1 = more$fn(data,times,y,p,more$more)
-    x = array(0,c(length(x1),length(p)))
-
-    for(i in 1:length(p)){
-        tp = p
-        tp[i] = p[i] + more$eps
-        x[,i] = (more$fn(data,times,y,tp,more$more)-x1)/more$eps        
+        for(i in 1:ncol(data)){
+            tdata = data
+            tdata[,i] = data[,i] + more$eps
+            x[,i] = (more$fn(tdata,times,y,p,more$more)-x1)/more$eps
+        }
+        return(x)
     }
-    return(x)
-}
 
-findif.loglik.d2fdx2 <- function(data,times,y,p,more)
-{
-    x1 = findif.loglik.dfdx(data,times,y,p,more)
-    x = array(0,c(dim(x1),ncol(y)))
+    #  ----  1st derivative with respect to p
 
-    for(i in 1:ncol(y)){
-        ty = y
-        ty[,i] = y[,i] + more$eps
-        x[,,i] = (findif.loglik.dfdx(data,times,ty,p,more)-x1)/more$eps
+    findif.loglik.dfdp <- function(data,times,y,p,more)
+    {
+
+        x1 = more$fn(data,times,y,p,more$more)
+        x  = array(0,c(length(x1),length(p)))
+
+        for(i in 1:length(p)){
+            tp = p
+            tp[i] = p[i] + more$eps
+            x[,i] = (more$fn(data,times,y,tp,more$more)-x1)/more$eps        
+        }
+        return(x)
     }
-    return(x)
-}
 
-findif.loglik.d2fdy2 <- function(data,times,y,p,more)
-{
-    x1 = findif.loglik.dfdy(data,times,y,p,more)
-    x = array(0,c(dim(x1),ncol(data)))
+    #  ----  2nd derivative with respect to x
 
-    for(i in 1:ncol(data)){
-        tdata = data
-        tdata[,i] = data[,i] + more$eps
-        x[,,i] = (findif.loglik.dfdy(tdata,times,y,p,more)-x1)/more$eps
+    findif.loglik.d2fdx2 <- function(data,times,y,p,more)
+    {
+        x1 = findif.loglik.dfdx(data,times,y,p,more)
+        x  = array(0,c(dim(x1),ncol(y)))
+
+        for(i in 1:ncol(y)){
+            ty = y
+            ty[,i] = y[,i] + more$eps
+            x[,,i] = (findif.loglik.dfdx(data,times,ty,p,more)-x1)/more$eps
+        }
+        return(x)
     }
-    return(x)
-}
 
-findif.loglik.d2fdxdy <- function(data,times,y,p,more)
-{
-    x1 = findif.loglik.dfdx(data,times,y,p,more)
-    x = array(0,c(dim(x1),ncol(data)))
+    #  ----  2nd derivative with respect to y
 
-    for(i in 1:ncol(data)){
-        tdata = data
-        tdata[,i] = data[,i] + more$eps
-        x[,,i] = (findif.loglik.dfdx(tdata,times,y,p,more)-x1)/more$eps
+    findif.loglik.d2fdy2 <- function(data,times,y,p,more)
+    {
+        x1 = findif.loglik.dfdy(data,times,y,p,more)
+        x  = array(0,c(dim(x1),ncol(data)))
+
+        for(i in 1:ncol(data)){
+            tdata = data
+            tdata[,i] = data[,i] + more$eps
+            x[,,i] = (findif.loglik.dfdy(tdata,times,y,p,more)-x1)/more$eps
+        }
+        return(x)
     }
-    return(x)
-}
 
-
-findif.loglik.d2fdxdp <- function(data,times,y,p,more)
-{
-    x1 = findif.loglik.dfdx(data,times,y,p,more)
-    x = array(0,c(dim(x1),length(p)))
+    #  ----  2nd cross-derivative with respect to x and y
     
-    for(i in 1:length(p)){
-        tp = p
-        tp[i] = p[i] + more$eps
-        x[,,i] = (findif.loglik.dfdx(data,times,y,tp,more)-x1)/more$eps
+    findif.loglik.d2fdxdy <- function(data,times,y,p,more)
+    {
+        x1 = findif.loglik.dfdx(data,times,y,p,more)
+        x  = array(0,c(dim(x1),ncol(data)))
+
+        for(i in 1:ncol(data)){
+            tdata = data
+            tdata[,i] = data[,i] + more$eps
+            x[,,i] = (findif.loglik.dfdx(tdata,times,y,p,more)-x1)/more$eps
+        }
+        return(x)
     }
 
-    return(x)
-}
-
-
-findif.loglik.d2fdydp <- function(data,times,y,p,more)
-{
-    x1 = findif.loglik.dfdy(data,times,y,p,more)
-    x = array(0,c(dim(x1),length(p)))
+    #  ----  2nd cross-derivative with respect to x and p
     
-    for(i in 1:length(p)){
-        tp = p
-        tp[i] = p[i] + more$eps
-        x[,,i] = (findif.loglik.dfdy(data,times,y,tp,more)-x1)/more$eps
+    findif.loglik.d2fdxdp <- function(data,times,y,p,more)
+    {
+        x1 = findif.loglik.dfdx(data,times,y,p,more)
+        x  = array(0,c(dim(x1),length(p)))
+    
+        for(i in 1:length(p)){
+            tp = p
+            tp[i] = p[i] + more$eps
+            x[,,i] = (findif.loglik.dfdx(data,times,y,tp,more)-x1)/more$eps
+        }
+
+        return(x)
     }
 
-    return(x)
-}
+    #  ----  2nd cross-derivative with respect to y and p
+    
+    findif.loglik.d2fdydp <- function(data,times,y,p,more)
+    {
+        x1 = findif.loglik.dfdy(data,times,y,p,more)
+        x  = array(0,c(dim(x1),length(p)))
+    
+        for(i in 1:length(p)){
+            tp = p
+            tp[i] = p[i] + more$eps
+            x[,,i] = (findif.loglik.dfdy(data,times,y,tp,more)-x1)/more$eps
+        }
 
-#make.findif.loglik <- function()
-#{
+        return(x)
+    }
+    
+    #  ----  return the list object with the approximations
+
     return(
         list(
-            fn = findif.loglik.fun,
-            dfdx = findif.loglik.dfdx,
-            dfdy = findif.loglik.dfdy,
-            dfdp = findif.loglik.dfdp,
-            d2fdx2 = findif.loglik.d2fdx2,
-            d2fdy2 = findif.loglik.d2fdy2,
+            fn      = findif.loglik.fun,
+            dfdx    = findif.loglik.dfdx,
+            dfdy    = findif.loglik.dfdy,
+            dfdp    = findif.loglik.dfdp,
+            d2fdx2  = findif.loglik.d2fdx2,
+            d2fdy2  = findif.loglik.d2fdy2,
             d2fdxdy = findif.loglik.d2fdxdy,
             d2fdxdp = findif.loglik.d2fdxdp,
             d2fdydp = findif.loglik.d2fdydp
