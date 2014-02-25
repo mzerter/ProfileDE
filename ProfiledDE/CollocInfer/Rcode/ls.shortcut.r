@@ -209,9 +209,9 @@ LS.setup = function(pars, coefs=NULL, fn, basisvals=NULL, lambda, fd.obj=NULL,
 #                  the default continuous time model.
 #  NAMES      ...  Names for columns
 #  SPARSE     ...  Sparse storage model for basis values
-#  LIKFUN     ...  Function handle to a defined function for mapping 
+#  LIKFN     ...  Function handle to a defined function for mapping 
 #                  trajectories into observations.  Defaults to make_id.
-#  LIKMORE    ...  Additional information for LIKFUN
+#  LIKMORE    ...  Additional information for LIKFN
 
 
     colnames = names

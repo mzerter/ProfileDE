@@ -58,11 +58,11 @@ function [lik, proc, coefs] = ...
 %                  are constrained to be positive.
 %  DISCRETE   ...  If nonzero, a discrete time model is used instead of
 %                  the default continuous time model.
-%  LIKFUN     ...  Function handle to a defined function for mapping 
+%  LIKFN     ...  Function handle to a defined function for mapping 
 %                  trajectories into observations.  Defaults to make_id.
-%  LIKMORE    ...  Additional information for LIKFUN
+%  LIKMORE    ...  Additional information for LIKFN
 
-%  Last modified 11 Feburary 2014
+%  Last modified 24 Feburary 2014
 
 if nargin < 3
     error('Number of arguments is less than three.');
@@ -177,44 +177,53 @@ lik = make_SSElik;
 %  process to fit the data.  POS == 0 means no transformation, otherwise an
 %  exponential transformation is applied to provide a positive fit.
 
-if ~poslik
-    if isstruct(likfn)
+if ~poslik                              % Map from stats to obs                  
+    if isstruct(likfn)                  % All derivatives available analytically
         lik.more = likfn;
         if ~isempty(lik.more.more)
             lik.more.more = likmore;
         end
-    else
+    else                                % Finite-difference for derivatives
         lik.more = make_findif_ode;
+        
         likmoremore.fn   = likfn;
         likmoremore.more = likmore;
         likmoremore.eps  = diffeps;
+        
         lik.more.more    = likmoremore;
     end
-else
-    if isstruct(likfn)
-        lik.more = make_exp;
+else                                    % States given on log scale
+    if isstruct(likfn)                  % All derivatives available analytically
+        lik.more = make_exp;            
         lik.more.more = likfn;
         if isempty(lik.more.more.more)
             lik.more.more.more = likmore;
         end
-    else
+    else                                % Finite-difference for derivatives
         lik.more = make_findif_ode;
         temp = make_exp;
         lik.more.more.fn = temp.fn;
-        temp
-        lik.more.more.fn   = likfn;
-        lik.more.more.more = likmore;
-        lik.more.more.eps  = diffeps;
+        
+        
+        likmoremoremore.fn   = likfn;
+        likmoremoremore.more = likmore;
+        likmoremoremore.eps  = diffeps;
+        
+        lik.more.more.more = likmoremoremore;        
     end
         
-    likfn = make_id;
+%    likfn = make_id;   <---- This default value should be set somewhere at
+%    beginning? See issue #3
 end
 
+%                  <---------------- This section doesn't make sense now?
 %  Members MORE and WHICHOBS are referenced as arguments but 
 %  usually not used
 
-lik.more.more     = [];   
-lik.more.whichobs = [];
+% lik.more.more     = [];   
+% lik.more.whichobs = [];
+%                  <--------------- 
+
 
 %  ------------------------------------------------------------------------
 %  Define struct object PROC containing functions for evaluating the
@@ -246,6 +255,9 @@ else
         tempstruct.more = more;
         tempstruct.eps  = diffeps;
         temp.more = tempstruct;
+        
+ % else if FN is a 'pomp' function. See R code. <------------------- POMP
+ 
     else
         error('FN is not a function_handle object.'); 
     end
@@ -253,14 +265,16 @@ else
     % base level 1 of procmore contains discrete approximation functions
     
     procmore = make_findif_ode; 
+    
     if posproc
         %  penalty to be evaluated on log scale, level 2 contains the
         %  logging functions
+        
         logtranstemp = make_logtrans;
-        % level 2 of procmore containing logging function for RHS only
+
         tempstruct.fn   = logtranstemp.fn;
         tempstruct.more = temp.more;
-        tempstruct.eps  = diffeps;
+%        tempstruct.eps  = diffeps;  <------------ Line 285 Makes redundant
         procmore.more   = tempstruct;
     else
         %  level 2 of procmore contains equation RHS evaluation function
