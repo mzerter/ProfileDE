@@ -3,7 +3,8 @@
 function [fdobj, ncoefs, lik, proc] = ...
     Smooth_LS(fn, times, data,  coefs, pars, basisvals, lambda, ...
               fdobj, more, obsweights, quadrature, ...
-              in_method, options_in, diffeps, poslik, posproc, discrete)
+              in_method, options_in, diffeps, poslik, posproc, discrete, ...
+              likfn, likmore)
 %  The multivariate data = argment data are observations of one or more
 %  functional variables or processes at time points = argument times.
 %
@@ -98,9 +99,15 @@ function [fdobj, ncoefs, lik, proc] = ...
 %                  are constrained to be positive.
 %  DISCRETE   ...  If nonzero, a discrete time model is used instead of
 %                  the default continuous time model.
+%  LIKFN      ...  Function handle to a defined function for mapping 
+%                  trajectories into observations.  Defaults to make_id.
+%  LIKMORE    ...  Additional information for LIKFN
 
-%  Last modified 8 January 2011
+%  Last modified 25 Feburary 2014 (Mathieu)
+disp('Smooth_LS Version: 25 Feburary 2014 (Mathieu)')
 
+if nargin < 19,   likmore     = [];  end
+if nargin < 18 || isempty(likfn),    likfn    = make_id;end
 if nargin < 17, discrete    = 0;     end
 if nargin < 16, posproc     = 0;     end
 if nargin < 15, poslik      = 0;     end
@@ -115,8 +122,8 @@ if nargin <  7, basisvals   = [];    end
 
 [lik, proc, coefs] = ...
     LS_setup(fn, times, coefs, basisvals, lambda, fdobj,...
-             more, obsweights, quadrature, ...
-             diffeps, poslik, posproc, discrete);
+             more, data, obsweights, quadrature, ...
+             diffeps, poslik, posproc, discrete, likfn, likmore);
 
 %  Carry out an inner optimization to estimate coefficients for
 %  processes given parameter values

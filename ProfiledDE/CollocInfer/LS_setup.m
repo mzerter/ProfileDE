@@ -58,11 +58,12 @@ function [lik, proc, coefs] = ...
 %                  are constrained to be positive.
 %  DISCRETE   ...  If nonzero, a discrete time model is used instead of
 %                  the default continuous time model.
-%  LIKFN     ...  Function handle to a defined function for mapping 
+%  LIKFN      ...  Function handle to a defined function for mapping 
 %                  trajectories into observations.  Defaults to make_id.
 %  LIKMORE    ...  Additional information for LIKFN
 
-%  Last modified 24 Feburary 2014
+%  Last modified 25 Feburary 2014 (Mathieu)
+disp('LS_Setup Version: 25 Feburary 2014 (Mathieu)')
 
 if nargin < 3
     error('Number of arguments is less than three.');
@@ -73,11 +74,11 @@ end
 %  ------------------------------------------------------------------------
 
 if nargin < 16, likmore    = [];    end
-if nargin < 15, likfn      = [];    end
-if nargin < 14, discrete   = 0;     end
-if nargin < 13, posproc    = 0;     end
-if nargin < 12, poslik     = 0;     end
-if nargin < 11, diffeps    = [];    end
+if nargin < 15 || isempty(likfn),   likfn    = make_id;end
+if nargin < 14 || isempty(discrete), discrete = 0;      end
+if nargin < 13 || isempty(posproc),  posproc  = 0;      end
+if nargin < 12 || isempty(poslik),   poslik   = 0;      end
+if nargin < 11 || isempty(diffeps),  diffeps  = 1e-6;   end
 if nargin < 10, quadrature = [];    end
 if nargin <  9, obsweights = [];    end
 if nargin <  8, data       = [];    end
@@ -180,10 +181,13 @@ lik = make_SSElik;
 if ~poslik                              % Map from stats to obs                  
     if isstruct(likfn)                  % All derivatives available analytically
         lik.more = likfn;
-        if ~isempty(lik.more.more)
+        if ~isfield(lik.more, 'more') || isempty(lik.more.more)
             lik.more.more = likmore;
         end
     else                                % Finite-difference for derivatives
+        
+        
+
         lik.more = make_findif_ode;
         
         likmoremore.fn   = likfn;
@@ -196,10 +200,11 @@ else                                    % States given on log scale
     if isstruct(likfn)                  % All derivatives available analytically
         lik.more = make_exp;            
         lik.more.more = likfn;
-        if isempty(lik.more.more.more)
+        if ~isfield(lik.more.more, 'more') || isempty(lik.more.more.more)
             lik.more.more.more = likmore;
         end
     else                                % Finite-difference for derivatives
+
         lik.more = make_findif_ode;
         temp = make_exp;
         lik.more.more.fn = temp.fn;

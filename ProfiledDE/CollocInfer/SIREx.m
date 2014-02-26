@@ -7,10 +7,13 @@
 %  add paths to required functions, assuming this code is executed
 %  in the CollocInfer folder in ProfiledDE
 
-addpath('../../fdaM')
+addpath('../../../fdaM')
 addpath('SIR')
 addpath('SSE')
 addpath('id')
+addpath('findif')
+addpath('..')
+
 
 %  set time span in weeks
 
@@ -81,7 +84,7 @@ INNEROPT_COEFS0 = SIRcoefs0;
 
 %  Now do the profiling estimation
 
-SIRstruct = Profile_LS0(fnStruct, SIRtimes, SIRdata, SIRcoefs0, ...
+SIRstruct = Profile_LS(fnStruct, SIRtimes, SIRdata, SIRcoefs0, ...
                         SIRpars0, SIRbasis, SIRlambda);
 
 SIRcoefs = SIRstruct.coefs; 
