@@ -1,10 +1,7 @@
-%  ------------------------------------------------------------------------
-%                  ChemoStat model, based on R file ChemoEx2.r
-%  ------------------------------------------------------------------------
-
 %  add paths to required functions
 
 addpath('../../../fdaM')
+addpath('..')
 addpath('fhn')
 addpath('SSE')
 addpath('id')
@@ -14,6 +11,8 @@ addpath('genlin')
 addpath('findif')
 addpath('loggenlin')
 addpath('ChemoStat')
+addpath('Symbolic_ODE')
+
 
 % The Chemostat equations represent a four-species Chemostat plus the  
 % resource of Nitrogen. There are two species of Algae with varying
@@ -151,6 +150,9 @@ y0 = log([2, 0.1, 0.4, 0.2, 0.1]);
 %  check the values of the right hand side
 
 more = [];
+
+ChemoFn = make_ODE_ChemoStat.m
+
 
 fnval = chemo_fun1(ChemoTime, y0', logpars, more);
 
